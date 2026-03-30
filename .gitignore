@@ -1,0 +1,30 @@
+# Dependencias
+node_modules/
+
+# Expo local
+.expo/
+dist/
+web-build/
+
+# Compilación Nativa (Android/iOS)
+android/
+ios/
+*.jks
+*.p12
+*.key
+*.mobileprovision
+
+# Variables de entorno (¡CRÍTICO!)
+.env
+.env.local
+.env.development
+.env.production
+
+# Logs y Temporales
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.eslintcache
+
+# macOS
+.DS_Store

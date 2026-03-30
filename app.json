@@ -1,0 +1,78 @@
+{
+  "expo": {
+    "name": "Vigilancia de la Vía",
+    "slug": "vigilancia-via",
+    "version": "1.0.0",
+    "scheme": "vigilancia-via",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1a73e8"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "La app necesita acceso a la ubicación para registrar dónde ocurre el incidente."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "La app necesita acceso a la galería para adjuntar fotos al reporte.",
+          "cameraPermission": "La app necesita acceso a la cámara para fotografiar el incidente."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "La app necesita acceso a la cámara."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#1a73e8",
+          "sounds": [],
+          "androidMode": "default",
+          "androidCollapsedTitle": "Vigilancia de la Vía"
+        }
+      ],
+      "expo-asset",
+      "expo-secure-store"
+    ],
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#1a73e8"
+      },
+      "config": {
+        "googleMaps": {
+          "apiKey": "TU_GOOGLE_MAPS_API_KEY"
+        }
+      },
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE",
+        "POST_NOTIFICATIONS"
+      ]
+    },
+    "ios": {
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "La app necesita la ubicación para registrar el incidente.",
+        "NSCameraUsageDescription": "La app necesita la cámara para fotografiar el incidente.",
+        "NSPhotoLibraryUsageDescription": "La app necesita acceso a la galería para adjuntar fotos."
+      }
+    }
+  }
+}
