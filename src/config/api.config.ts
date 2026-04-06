@@ -8,9 +8,7 @@
  *   BASE_URL = 'http://<IP-de-tu-PC>:3000'
  */
 export const API_CONFIG = {
-  BASE_URL: __DEV__
-    ? 'http://192.168.1.205:3000'  // Android Emulator → localhost del PC
-    : 'https://api.vigilancia-via.com',
+  BASE_URL: process.env.NEXT_PUBLIC_API_URL,
 
   TIMEOUT_MS: 15_000,
 
