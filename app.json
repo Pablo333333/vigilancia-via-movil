@@ -43,7 +43,15 @@
         }
       ],
       "expo-asset",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ]
     ],
     "android": {
       "adaptiveIcon": {
@@ -52,19 +60,22 @@
       },
       "config": {
         "googleMaps": {
-          "apiKey": "TU_GOOGLE_MAPS_API_KEY"
+          "apiKey": "AIzaSyCSJfseY2QKnMNGLP5MClVolLc5FMNxf_g"
         }
       },
       "permissions": [
-        "ACCESS_COARSE_LOCATION",
-        "ACCESS_FINE_LOCATION",
-        "CAMERA",
-        "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE",
-        "RECEIVE_BOOT_COMPLETED",
-        "VIBRATE",
-        "POST_NOTIFICATIONS"
-      ]
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.VIBRATE",
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.RECORD_AUDIO"
+      ],
+      "package": "com.pablodev3.vigilanciavia",
+      "newArchEnabled": true
     },
     "ios": {
       "supportsTablet": false,
@@ -72,6 +83,12 @@
         "NSLocationWhenInUseUsageDescription": "La app necesita la ubicación para registrar el incidente.",
         "NSCameraUsageDescription": "La app necesita la cámara para fotografiar el incidente.",
         "NSPhotoLibraryUsageDescription": "La app necesita acceso a la galería para adjuntar fotos."
+      }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "c1d3b653-c954-45f0-aca5-0f7f1157402c"
       }
     }
   }
