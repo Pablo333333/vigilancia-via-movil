@@ -60,7 +60,7 @@
       },
       "config": {
         "googleMaps": {
-          "apiKey": "AIzaSyCSJfseY2QKnMNGLP5MClVolLc5FMNxf_g"
+          "apiKey": "AIzaSyB7ro5pDJ3w60-DwXeK4KaNKPvx2K0Nb1Q"
         }
       },
       "permissions": [
@@ -75,6 +75,7 @@
         "android.permission.RECORD_AUDIO"
       ],
       "package": "com.pablodev3.vigilanciavia",
+      "googleServicesFile": "./google-services.json",
       "newArchEnabled": true
     },
     "ios": {
