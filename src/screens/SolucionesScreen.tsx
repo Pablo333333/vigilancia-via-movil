@@ -425,15 +425,15 @@ function ResolucionModal({
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#f0f4ff' },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f0f4ff', padding: 32 },
-  loadingText: { marginTop: 12, color: '#6b7280', fontSize: 14 },
+  loadingText: { marginTop: 12, color: '#6b7280', fontSize: 17 },
   list: { padding: 16, paddingBottom: 32 },
 
-  listHeader: { fontSize: 13, color: '#6b7280', fontWeight: '500', marginBottom: 12 },
+  listHeader: { fontSize: 16, color: '#6b7280', fontWeight: '500', marginBottom: 12 },
 
   // Acceso denegado
   lockIcon: { fontSize: 52, marginBottom: 14 },
-  lockTitle: { fontSize: 18, fontWeight: '700', color: '#374151', marginBottom: 8 },
-  lockSubtitle: { fontSize: 14, color: '#6b7280', textAlign: 'center', lineHeight: 20 },
+  lockTitle: { fontSize: 22, fontWeight: '700', color: '#374151', marginBottom: 8 },
+  lockSubtitle: { fontSize: 17, color: '#6b7280', textAlign: 'center', lineHeight: 22 },
 
   // Card
   card: {
@@ -450,13 +450,13 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
-  cardTipo: { fontSize: 15, fontWeight: '700', color: '#111827', flex: 1, marginRight: 8 },
+  cardTipo: { fontSize: 18, fontWeight: '700', color: '#111827', flex: 1, marginRight: 8 },
   badge: { borderRadius: 12, paddingHorizontal: 10, paddingVertical: 3 },
-  badgeText: { color: '#fff', fontSize: 11, fontWeight: '700' },
+  badgeText: { color: '#fff', fontSize: 13, fontWeight: '700' },
   cardFoto: { width: '100%', height: 140, borderRadius: 10, marginBottom: 10 },
-  cardComment: { fontSize: 13, color: '#374151', marginBottom: 8, lineHeight: 18 },
-  cardCoords: { fontSize: 12, color: '#6b7280', fontFamily: 'monospace', marginBottom: 4 },
-  cardDate: { fontSize: 11, color: '#9ca3af', marginBottom: 12 },
+  cardComment: { fontSize: 16, color: '#374151', marginBottom: 8, lineHeight: 20 },
+  cardCoords: { fontSize: 14, color: '#6b7280', fontFamily: 'monospace', marginBottom: 4 },
+  cardDate: { fontSize: 13, color: '#9ca3af', marginBottom: 12 },
 
   cardActions: { flexDirection: 'row', gap: 10 },
   readOnlyBadge: {
@@ -466,26 +466,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     alignItems: 'center',
   },
-  readOnlyText: { fontSize: 12, color: '#6b7280', fontWeight: '500' },
+  readOnlyText: { fontSize: 14, color: '#6b7280', fontWeight: '500' },
   actionBtnSecondary: {
     flex: 1, paddingVertical: 10, borderRadius: 10,
     borderWidth: 1.5, borderColor: '#1a73e8',
     alignItems: 'center', justifyContent: 'center',
   },
-  actionBtnSecondaryText: { color: '#1a73e8', fontSize: 13, fontWeight: '600' },
+  actionBtnSecondaryText: { color: '#1a73e8', fontSize: 16, fontWeight: '600' },
   actionBtnPrimary: {
     flex: 1, paddingVertical: 10, borderRadius: 10,
     backgroundColor: '#16a34a', alignItems: 'center', justifyContent: 'center',
   },
-  actionBtnPrimaryText: { color: '#fff', fontSize: 13, fontWeight: '700' },
+  actionBtnPrimaryText: { color: '#fff', fontSize: 16, fontWeight: '700' },
   btnDisabled: { opacity: 0.5 },
 
   // Empty
   emptyContainer: { flex: 1 },
   emptyState: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 80 },
   emptyIcon: { fontSize: 48, marginBottom: 12 },
-  emptyTitle: { fontSize: 18, fontWeight: '600', color: '#374151' },
-  emptySubtitle: { fontSize: 14, color: '#6b7280', marginTop: 4 },
+  emptyTitle: { fontSize: 22, fontWeight: '600', color: '#374151' },
+  emptySubtitle: { fontSize: 17, color: '#6b7280', marginTop: 4 },
 
   // Modal resolución
   modalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.45)' },
@@ -502,10 +502,10 @@ const styles = StyleSheet.create({
     width: 40, height: 4, backgroundColor: '#d1d5db',
     borderRadius: 2, alignSelf: 'center', marginBottom: 16,
   },
-  modalTitle: { fontSize: 17, fontWeight: '700', color: '#111827', marginBottom: 2 },
-  modalSubtitle: { fontSize: 13, color: '#6b7280', marginBottom: 16 },
+  modalTitle: { fontSize: 20, fontWeight: '700', color: '#111827', marginBottom: 2 },
+  modalSubtitle: { fontSize: 16, color: '#6b7280', marginBottom: 16 },
 
-  fieldLabel: { fontSize: 12, fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 16, marginBottom: 8 },
+  fieldLabel: { fontSize: 14, fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 16, marginBottom: 8 },
   fieldLabelOptional: { fontWeight: '400', textTransform: 'none' },
 
   // Foto evidencia
@@ -514,13 +514,13 @@ const styles = StyleSheet.create({
     flex: 1, backgroundColor: '#1a73e8', borderRadius: 10,
     paddingVertical: 12, alignItems: 'center',
   },
-  fotoBtnText: { color: '#fff', fontSize: 14, fontWeight: '600' },
+  fotoBtnText: { color: '#fff', fontSize: 17, fontWeight: '600' },
   fotoBtnSecondary: {
     paddingHorizontal: 16, paddingVertical: 12, borderRadius: 10,
     borderWidth: 1.5, borderColor: '#d1d5db', backgroundColor: '#fff',
     alignItems: 'center', justifyContent: 'center',
   },
-  fotoBtnSecondaryText: { color: '#374151', fontSize: 13 },
+  fotoBtnSecondaryText: { color: '#374151', fontSize: 16 },
   fotoPreviewWrap: { position: 'relative' },
   fotoPreview: { width: '100%', height: 160, borderRadius: 12 },
   fotoRemoveBtn: {
@@ -528,22 +528,22 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.55)', borderRadius: 14,
     paddingHorizontal: 10, paddingVertical: 4,
   },
-  fotoRemoveText: { color: '#fff', fontSize: 12 },
+  fotoRemoveText: { color: '#fff', fontSize: 14 },
 
   // TextArea
   textArea: {
     backgroundColor: '#f9fafb', borderRadius: 10, borderWidth: 1,
-    borderColor: '#d1d5db', padding: 12, fontSize: 14,
+    borderColor: '#d1d5db', padding: 12, fontSize: 17,
     color: '#111827', minHeight: 90,
   },
 
   // Error / Progress
   errorBox: { backgroundColor: '#fee2e2', borderRadius: 8, padding: 10, marginTop: 10 },
-  errorText: { color: '#dc2626', fontSize: 13 },
+  errorText: { color: '#dc2626', fontSize: 16 },
   progressWrap: { marginTop: 10, gap: 4 },
   progressTrack: { height: 5, backgroundColor: '#e5e7eb', borderRadius: 3, overflow: 'hidden' },
   progressBar: { height: '100%', backgroundColor: '#16a34a' },
-  progressText: { fontSize: 11, color: '#6b7280', textAlign: 'right' },
+  progressText: { fontSize: 13, color: '#6b7280', textAlign: 'right' },
 
   // Acciones modal
   modalActions: { flexDirection: 'row', gap: 12, marginTop: 20 },
@@ -551,10 +551,10 @@ const styles = StyleSheet.create({
     flex: 1, paddingVertical: 13, borderRadius: 12,
     borderWidth: 1.5, borderColor: '#d1d5db', alignItems: 'center',
   },
-  cancelBtnText: { color: '#374151', fontSize: 15, fontWeight: '600' },
+  cancelBtnText: { color: '#374151', fontSize: 18, fontWeight: '600' },
   submitBtn: {
     flex: 2, paddingVertical: 13, borderRadius: 12,
     backgroundColor: '#16a34a', alignItems: 'center',
   },
-  submitBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
+  submitBtnText: { color: '#fff', fontSize: 18, fontWeight: '700' },
 });

@@ -128,7 +128,7 @@ export default function NewReportScreen() {
       Alert.alert(
         '¡Reporte enviado!',
         'Tu reporte fue registrado con estado Pendiente. El equipo responsable lo atenderá pronto.',
-        [{ text: 'OK', onPress: () => router.replace('/(tabs)') }],
+        [{ text: 'OK', onPress: () => router.replace('/(tabs)/mapa') }],
       );
     } catch (err) {
       const isNetworkError =
@@ -155,7 +155,7 @@ export default function NewReportScreen() {
           Alert.alert(
             'Sin conexión — Guardado',
             'No hay internet. Tu reporte fue guardado en el dispositivo y se enviará automáticamente cuando recuperes la señal.',
-            [{ text: 'OK', onPress: () => router.replace('/(tabs)') }],
+            [{ text: 'OK', onPress: () => router.replace('/(tabs)/mapa') }],
           );
         } catch {
           setErrorMsg('No se pudo guardar el reporte. Intentá nuevamente.');
@@ -213,7 +213,7 @@ export default function NewReportScreen() {
         )}
 
         {/* ─── GPS ──────────────────────────────────────────────────── */}
-        <Text style={styles.sectionLabel}>Ubicación GPS</Text>
+        <Text style={styles.sectionLabel}>Estado del GPS</Text>
         <View style={styles.gpsCard}>
           {locationError ? (
             <Text style={styles.gpsError}>{locationError}</Text>
@@ -222,10 +222,10 @@ export default function NewReportScreen() {
               <View style={styles.gpsRow}>
                 <Text style={styles.gpsDot}>🟢</Text>
                 <Text style={styles.gpsCoords}>
-                  {coordenadas.latitud.toFixed(6)}, {coordenadas.longitud.toFixed(6)}
+                  Ubicación fijada correctamente
                 </Text>
               </View>
-              <Text style={styles.gpsPrecision}>Precisión: ±{Math.round(coordenadas.precision)} m</Text>
+              <Text style={styles.gpsPrecision}>La posición se enviará con el reporte</Text>
             </>
           ) : (
             <View style={styles.gpsLoading}>
@@ -329,7 +329,7 @@ const styles = StyleSheet.create({
   content: { padding: 20, paddingBottom: 48 },
 
   sectionLabel: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '700',
     color: '#6b7280',
     textTransform: 'uppercase',
@@ -351,8 +351,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 16,
   },
-  fotoBtnIcon: { fontSize: 22 },
-  fotoBtnPrimaryText: { color: '#fff', fontSize: 15, fontWeight: '600' },
+  fotoBtnIcon: { fontSize: 26 },
+  fotoBtnPrimaryText: { color: '#fff', fontSize: 18, fontWeight: '600' },
   fotoBtnSecondary: {
     paddingHorizontal: 16,
     paddingVertical: 16,
@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  fotoBtnSecondaryText: { color: '#374151', fontSize: 14 },
+  fotoBtnSecondaryText: { color: '#374151', fontSize: 17 },
 
   fotoPreviewContainer: { gap: 8 },
   fotoPreview: { width: '100%', height: 200, borderRadius: 12 },
@@ -376,7 +376,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   fotoActionRemove: { backgroundColor: '#fee2e2' },
-  fotoActionText: { fontSize: 13, fontWeight: '500', color: '#374151' },
+  fotoActionText: { fontSize: 16, fontWeight: '500', color: '#374151' },
 
   // ─── GPS
   gpsCard: {
@@ -387,12 +387,12 @@ const styles = StyleSheet.create({
     borderColor: '#e5e7eb',
   },
   gpsRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  gpsDot: { fontSize: 12 },
-  gpsCoords: { fontSize: 13, color: '#111827', fontFamily: 'monospace' },
-  gpsPrecision: { fontSize: 12, color: '#6b7280', marginTop: 4 },
+  gpsDot: { fontSize: 14 },
+  gpsCoords: { fontSize: 16, color: '#111827', fontFamily: 'monospace' },
+  gpsPrecision: { fontSize: 14, color: '#6b7280', marginTop: 4 },
   gpsLoading: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  gpsLoadingText: { fontSize: 13, color: '#6b7280' },
-  gpsError: { fontSize: 13, color: '#dc2626' },
+  gpsLoadingText: { fontSize: 16, color: '#6b7280' },
+  gpsError: { fontSize: 16, color: '#dc2626' },
 
   // ─── Picker trigger
   pickerTrigger: {
@@ -406,8 +406,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  pickerTriggerText: { fontSize: 15, color: '#111827' },
-  pickerChevron: { fontSize: 14, color: '#6b7280' },
+  pickerTriggerText: { fontSize: 18, color: '#111827' },
+  pickerChevron: { fontSize: 17, color: '#6b7280' },
 
   // ─── Comentario
   textArea: {
@@ -416,7 +416,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#d1d5db',
     padding: 14,
-    fontSize: 15,
+    fontSize: 18,
     color: '#111827',
     minHeight: 100,
   },
@@ -428,13 +428,13 @@ const styles = StyleSheet.create({
     padding: 12,
     marginTop: 12,
   },
-  errorText: { color: '#dc2626', fontSize: 13 },
+  errorText: { color: '#dc2626', fontSize: 16 },
 
   // ─── Progreso
   progressWrap: { marginTop: 12, gap: 4 },
   progressTrack: { height: 6, backgroundColor: '#e5e7eb', borderRadius: 3, overflow: 'hidden' },
   progressBar: { height: '100%', backgroundColor: '#1a73e8' },
-  progressText: { fontSize: 12, color: '#6b7280', textAlign: 'right' },
+  progressText: { fontSize: 14, color: '#6b7280', textAlign: 'right' },
 
   // ─── Submit
   submitBtn: {
@@ -445,7 +445,7 @@ const styles = StyleSheet.create({
     marginTop: 28,
   },
   submitBtnDisabled: { opacity: 0.6 },
-  submitBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  submitBtnText: { color: '#fff', fontSize: 19, fontWeight: '700' },
 
   // ─── Modal picker
   modalOverlay: {
@@ -469,7 +469,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   modalTitle: {
-    fontSize: 16,
+    fontSize: 19,
     fontWeight: '700',
     color: '#111827',
     marginBottom: 12,
@@ -485,7 +485,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#f3f4f6',
   },
   modalOptionSelected: { backgroundColor: '#eff6ff', marginHorizontal: -4, paddingHorizontal: 8, borderRadius: 8 },
-  modalOptionText: { fontSize: 15, color: '#374151' },
+  modalOptionText: { fontSize: 18, color: '#374151' },
   modalOptionTextSelected: { color: '#1a73e8', fontWeight: '600' },
-  modalCheck: { color: '#1a73e8', fontSize: 16, fontWeight: '700' },
+  modalCheck: { color: '#1a73e8', fontSize: 19, fontWeight: '700' },
 });

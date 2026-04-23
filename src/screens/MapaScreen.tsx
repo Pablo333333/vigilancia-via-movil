@@ -26,6 +26,7 @@ import {
 } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { useAuth } from '../hooks/useAuth';
+import { useLocation } from '../hooks/useLocation';
 import { ReportsService } from '../services/reports.service';
 import {
   EstadoReporte,
@@ -72,11 +73,13 @@ function safeCoord(value: unknown): number {
 export default function MapaScreen() {
   const mapRef = useRef<MapView>(null);
   const { user } = useAuth();
+  const { coordenadas, hasPermission, getCurrentLocation } = useLocation();
 
   const [reportes, setReportes] = useState<Reporte[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [selected, setSelected] = useState<Reporte | null>(null);
+  const [region, setRegion] = useState(INITIAL_REGION);
 
   const fetchReportes = useCallback(async () => {
     try {
@@ -93,6 +96,22 @@ export default function MapaScreen() {
   useEffect(() => {
     fetchReportes();
   }, [fetchReportes]);
+
+  // Obtener ubicación inicial del usuario
+  useEffect(() => {
+    if (hasPermission) {
+      getCurrentLocation().then(coords => {
+        setRegion({
+          latitude: coords.latitud,
+          longitude: coords.longitud,
+          latitudeDelta: 0.05,
+          longitudeDelta: 0.05,
+        });
+      }).catch(() => {
+        // Fallback a INITIAL_REGION si falla la ubicación actual
+      });
+    }
+  }, [hasPermission, getCurrentLocation]);
 
   // REPORTANTE solo ve PENDIENTE y EN_PROCESO (el backend ya filtra, esto es una segunda capa)
   const visibles = useMemo(
@@ -154,7 +173,7 @@ export default function MapaScreen() {
         ref={mapRef}
         style={styles.map}
         provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
-        initialRegion={INITIAL_REGION}
+        initialRegion={region}
         scrollEnabled
         zoomEnabled
         rotateEnabled
@@ -273,11 +292,11 @@ function DetailPanel({ reporte, onClose }: { reporte: Reporte; onClose: () => vo
         </View>
       ) : null}
 
-      {/* Coordenadas */}
+      {/* Coordenadas (Interno) */}
       <View style={styles.infoBlock}>
-        <Text style={styles.infoLabel}>Coordenadas</Text>
-        <Text style={[styles.infoValue, styles.coords]}>
-          {lat.toFixed(6)}, {lng.toFixed(6)}
+        <Text style={styles.infoLabel}>Ubicación</Text>
+        <Text style={styles.infoValue}>
+          Registrada mediante GPS
         </Text>
       </View>
 
@@ -329,7 +348,7 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   map: { flex: 1 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f0f4ff' },
-  loadingText: { marginTop: 12, color: '#6b7280', fontSize: 14 },
+  loadingText: { marginTop: 12, color: '#6b7280', fontSize: 17 },
 
   // Leyenda
   legend: {
@@ -346,19 +365,19 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 4,
   },
-  legendTitle: { fontSize: 11, fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 },
+  legendTitle: { fontSize: 13, fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   legendDot: { width: 10, height: 10, borderRadius: 5 },
-  legendLabel: { fontSize: 12, color: '#374151' },
+  legendLabel: { fontSize: 14, color: '#374151' },
 
   // Botón de refresco
   refreshBtn: {
     position: 'absolute',
     top: 12,
     left: 12,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: 'rgba(26,115,232,0.9)',
     justifyContent: 'center',
     alignItems: 'center',
@@ -368,7 +387,7 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 4,
   },
-  refreshBtnText: { fontSize: 20, color: '#fff', fontWeight: '700' },
+  refreshBtnText: { fontSize: 24, color: '#fff', fontWeight: '700' },
 
   // Contador
   counter: {
@@ -380,7 +399,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 5,
   },
-  counterText: { color: '#fff', fontSize: 12, fontWeight: '600' },
+  counterText: { color: '#fff', fontSize: 14, fontWeight: '600' },
 
   // Modal
   modalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.45)' },
@@ -400,11 +419,11 @@ const styles = StyleSheet.create({
   // Header
   detailHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 },
   detailHeaderText: { flex: 1, gap: 6 },
-  detailTipo: { fontSize: 17, fontWeight: '700', color: '#111827' },
+  detailTipo: { fontSize: 20, fontWeight: '700', color: '#111827' },
   estadoBadge: { borderRadius: 12, paddingHorizontal: 10, paddingVertical: 3, alignSelf: 'flex-start' },
-  estadoBadgeText: { color: '#fff', fontSize: 11, fontWeight: '600' },
+  estadoBadgeText: { color: '#fff', fontSize: 13, fontWeight: '600' },
   closeBtn: { padding: 4 },
-  closeBtnText: { fontSize: 18, color: '#6b7280' },
+  closeBtnText: { fontSize: 22, color: '#6b7280' },
 
   // Foto
   detailFoto: { width: '100%', height: 180, borderRadius: 12, marginBottom: 14 },
@@ -413,13 +432,13 @@ const styles = StyleSheet.create({
     height: 80, borderRadius: 12, backgroundColor: '#f3f4f6',
     justifyContent: 'center', alignItems: 'center', marginBottom: 14,
   },
-  noFotoText: { color: '#9ca3af', fontSize: 14 },
+  noFotoText: { color: '#9ca3af', fontSize: 17 },
 
   // Info
   infoBlock: { marginBottom: 12 },
-  infoLabel: { fontSize: 11, fontWeight: '600', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 },
-  infoValue: { fontSize: 14, color: '#374151', lineHeight: 20 },
-  coords: { fontFamily: 'monospace', fontSize: 13 },
+  infoLabel: { fontSize: 13, fontWeight: '600', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 },
+  infoValue: { fontSize: 17, color: '#374151', lineHeight: 22 },
+  coords: { fontFamily: 'monospace', fontSize: 16 },
 
   // Resolución
   resolucionBlock: {
@@ -431,6 +450,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#bbf7d0',
   },
-  resolucionTitle: { fontSize: 14, fontWeight: '700', color: '#15803d', marginBottom: 8 },
-  resolucionComment: { fontSize: 13, color: '#374151', lineHeight: 20 },
+  resolucionTitle: { fontSize: 17, fontWeight: '700', color: '#15803d', marginBottom: 8 },
+  resolucionComment: { fontSize: 16, color: '#374151', lineHeight: 22 },
 });

@@ -25,6 +25,10 @@ const IMAGE_OPTIONS: ImagePicker.ImagePickerOptions = {
   allowsEditing: true,
   aspect: [4, 3],
   quality: 0.8,   // 80% calidad — equilibrio entre nitidez y tamaño
+  // Nota: Estas opciones pueden no ser soportadas por todas las versiones de expo-image-picker
+  // pero intentamos forzar los labels para que coincidan con lo pedido.
+  confirmLabel: 'Guardar',
+  cancelLabel: 'Cancelar',
 };
 
 function buildFotoFromResult(

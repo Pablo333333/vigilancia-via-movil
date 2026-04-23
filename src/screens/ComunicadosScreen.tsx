@@ -274,7 +274,7 @@ function CrearComunicadoModal({
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f0f4ff' },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f0f4ff' },
-  loadingText: { marginTop: 12, color: '#6b7280', fontSize: 14 },
+  loadingText: { marginTop: 12, color: '#6b7280', fontSize: 17 },
   list: { padding: 16, paddingBottom: 80 },
 
   errorBox: {
@@ -286,8 +286,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  errorText: { color: '#dc2626', fontSize: 13, flex: 1 },
-  retryText: { color: '#1a73e8', fontWeight: '600', fontSize: 13, marginLeft: 12 },
+  errorText: { color: '#dc2626', fontSize: 16, flex: 1 },
+  retryText: { color: '#1a73e8', fontWeight: '600', fontSize: 16, marginLeft: 12 },
 
   card: {
     backgroundColor: '#fff',
@@ -297,7 +297,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e5e7eb',
   },
-  mensaje: { fontSize: 15, color: '#111827', lineHeight: 22, marginBottom: 10 },
+  mensaje: { fontSize: 18, color: '#111827', lineHeight: 24, marginBottom: 10 },
   restriccionBadge: {
     backgroundColor: '#fef3c7',
     borderRadius: 8,
@@ -306,23 +306,23 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     marginBottom: 8,
   },
-  restriccionText: { fontSize: 12, color: '#92400e', fontWeight: '500' },
-  date: { fontSize: 11, color: '#9ca3af' },
+  restriccionText: { fontSize: 14, color: '#92400e', fontWeight: '500' },
+  date: { fontSize: 13, color: '#9ca3af' },
 
   emptyContainer: { flex: 1 },
   emptyState: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 80 },
   emptyIcon: { fontSize: 48, marginBottom: 12 },
-  emptyTitle: { fontSize: 18, fontWeight: '600', color: '#374151' },
-  emptySubtitle: { fontSize: 14, color: '#6b7280', marginTop: 4 },
+  emptyTitle: { fontSize: 22, fontWeight: '600', color: '#374151' },
+  emptySubtitle: { fontSize: 17, color: '#6b7280', marginTop: 4 },
 
   // FAB
   fab: {
     position: 'absolute',
     bottom: 24,
     right: 20,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     backgroundColor: '#1a73e8',
     justifyContent: 'center',
     alignItems: 'center',
@@ -352,11 +352,11 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginBottom: 16,
   },
-  modalTitle: { fontSize: 17, fontWeight: '700', color: '#111827', marginBottom: 2 },
-  modalSubtitle: { fontSize: 13, color: '#6b7280', marginBottom: 16 },
+  modalTitle: { fontSize: 20, fontWeight: '700', color: '#111827', marginBottom: 2 },
+  modalSubtitle: { fontSize: 16, color: '#6b7280', marginBottom: 16 },
 
   fieldLabel: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '700',
     color: '#6b7280',
     textTransform: 'uppercase',
@@ -372,7 +372,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#d1d5db',
     padding: 12,
-    fontSize: 14,
+    fontSize: 17,
     color: '#111827',
     minHeight: 110,
   },
@@ -383,12 +383,12 @@ const styles = StyleSheet.create({
     borderColor: '#d1d5db',
     paddingHorizontal: 14,
     paddingVertical: 12,
-    fontSize: 14,
+    fontSize: 17,
     color: '#111827',
   },
 
   modalErrorBox: { backgroundColor: '#fee2e2', borderRadius: 8, padding: 10, marginTop: 12 },
-  modalErrorText: { color: '#dc2626', fontSize: 13 },
+  modalErrorText: { color: '#dc2626', fontSize: 16 },
 
   modalActions: { flexDirection: 'row', gap: 12, marginTop: 20 },
   cancelBtn: {
@@ -399,7 +399,7 @@ const styles = StyleSheet.create({
     borderColor: '#d1d5db',
     alignItems: 'center',
   },
-  cancelBtnText: { color: '#374151', fontSize: 15, fontWeight: '600' },
+  cancelBtnText: { color: '#374151', fontSize: 18, fontWeight: '600' },
   submitBtn: {
     flex: 2,
     paddingVertical: 13,
@@ -407,6 +407,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#1a73e8',
     alignItems: 'center',
   },
-  submitBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
+  submitBtnText: { color: '#fff', fontSize: 18, fontWeight: '700' },
   btnDisabled: { opacity: 0.5 },
 });
