@@ -403,7 +403,7 @@ function ResolucionModal({
               {/* ─── Botones ───────────────────────────────────────── */}
               <View style={styles.modalActions}>
                 <Pressable style={styles.cancelBtn} onPress={onClose} disabled={isSubmitting}>
-                  <Text style={styles.cancelBtnText}>Cancelar</Text>
+                  <Text style={styles.cancelBtnText}>Cerrar</Text>
                 </Pressable>
                 <Pressable
                   style={[styles.submitBtn, isSubmitting && styles.btnDisabled]}

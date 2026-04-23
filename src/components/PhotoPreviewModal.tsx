@@ -21,7 +21,7 @@ export function PhotoPreviewModal({ visible, uri, onConfirm, onCancel }: Props) 
           </View>
           <View style={styles.actions}>
             <Pressable style={styles.cancelBtn} onPress={onCancel}>
-              <Text style={styles.cancelText}>CANCELAR</Text>
+              <Text style={styles.cancelText}>Cerrar</Text>
             </Pressable>
             <Pressable style={styles.confirmBtn} onPress={onConfirm}>
               <Text style={styles.confirmText}>GUARDAR FOTO</Text>

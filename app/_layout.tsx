@@ -23,7 +23,7 @@ export default function RootLayout() {
 }
 
 function RootNavigator() {
-  const { user, isLoading } = useAuth();
+  const { user, isGuest, isLoading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
   const navigationState = useRootNavigationState();
@@ -49,12 +49,12 @@ function RootNavigator() {
 
     const inLogin = segments[0] === 'login';
 
-    if (!user && !inLogin) {
+    if (!user && !isGuest && !inLogin) {
       router.replace('/login');
     } else if (user && inLogin) {
       router.replace('/(tabs)');
     }
-  }, [user, isLoading, segments, navigationState?.key, router]);
+  }, [user, isGuest, isLoading, segments, navigationState?.key, router]);
 
   // ── Pantalla de carga inicial ─────────────────────────────────────────────────
   if (isLoading) {

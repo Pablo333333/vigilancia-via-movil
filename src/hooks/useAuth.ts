@@ -18,9 +18,11 @@ interface AuthContextValue {
   user: JwtUser | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  isGuest: boolean;
   login: (payload: LoginPayload) => Promise<void>;
   register: (payload: RegisterPayload) => Promise<void>;
   logout: () => Promise<void>;
+  continueAsGuest: () => void;
 }
 
 // ─── Context ────────────────────────────────────────────────────────────────────
@@ -31,6 +33,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<JwtUser | null>(null);
+  const [isGuest, setIsGuest] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const routerRef = useRef(router);
@@ -39,7 +42,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let mounted = true;
     AuthService.getMe()
-      .then((u) => { if (mounted) setUser(u); })
+      .then((u) => { if (mounted) { setUser(u); setIsGuest(false); } })
       .catch(() => { if (mounted) setUser(null); })
       .finally(() => { if (mounted) setIsLoading(false); });
     return () => { mounted = false; };
@@ -49,28 +52,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await AuthService.login(payload);
     const me = await AuthService.getMe();
     setUser(me);
+    setIsGuest(false);
   }, []);
 
   const register = useCallback(async (payload: RegisterPayload) => {
     await AuthService.register(payload);
     const me = await AuthService.getMe();
     setUser(me);
+    setIsGuest(false);
   }, []);
 
   const logout = useCallback(async () => {
     await AuthService.logout();
     ReportsService.invalidateCache();
     setUser(null);
+    setIsGuest(false);
     routerRef.current.replace('/login');
+  }, []);
+
+  const continueAsGuest = useCallback(() => {
+    setUser(null);
+    setIsGuest(true);
+    routerRef.current.replace('/(tabs)');
   }, []);
 
   const value: AuthContextValue = {
     user,
     isLoading,
     isAuthenticated: user !== null,
+    isGuest,
     login,
     register,
     logout,
+    continueAsGuest,
   };
 
   return React.createElement(AuthContext.Provider, { value }, children);

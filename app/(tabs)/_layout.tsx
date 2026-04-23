@@ -6,18 +6,18 @@ import { useAuth } from '../../src/hooks/useAuth';
 import { Rol } from '../../src/types';
 
 export default function TabsLayout() {
-  const { user, logout } = useAuth();
+  const { user, isGuest, logout } = useAuth();
   const insets = useSafeAreaInsets();
   const [loggingOut, setLoggingOut] = useState(false);
 
   const handleLogout = useCallback(() => {
     Alert.alert(
-      'Cerrar sesión',
-      '¿Estás seguro de que querés cerrar sesión?',
+      'Salir',
+      '¿Estás seguro de que querés salir?',
       [
         { text: 'Cancelar', style: 'cancel' },
         {
-          text: 'Cerrar sesión',
+          text: 'Salir',
           style: 'destructive',
           onPress: async () => {
             setLoggingOut(true);
@@ -51,7 +51,6 @@ export default function TabsLayout() {
         headerStyle: { backgroundColor: '#1a73e8' },
         headerTintColor: '#fff',
         headerTitleStyle: { fontWeight: '600' },
-        headerRight: logoutButton,
         tabBarActiveTintColor: '#1a73e8',
         tabBarInactiveTintColor: '#6b7280',
         tabBarStyle: {
@@ -74,7 +73,7 @@ export default function TabsLayout() {
         options={{
           title: 'Mapa',
           tabBarIcon: ({ color }) => <TabIcon icon="🗺️" color={color} />,
-          href: '/(tabs)/mapa',
+          href: isGuest ? null : '/(tabs)/mapa',
         }}
       />
       <Tabs.Screen
@@ -82,7 +81,7 @@ export default function TabsLayout() {
         options={{
           title: 'Soluciones',
           tabBarIcon: ({ color }) => <TabIcon icon="🔧" color={color} />,
-          href: user?.rol === Rol.RESPONSABLE || user?.rol === Rol.SUPERVISOR
+          href: !isGuest && (user?.rol === Rol.RESPONSABLE || user?.rol === Rol.SUPERVISOR)
             ? '/(tabs)/soluciones'
             : null,
         }}
@@ -92,7 +91,7 @@ export default function TabsLayout() {
         options={{
           title: 'Comunicados',
           tabBarIcon: ({ color }) => <TabIcon icon="📢" color={color} />,
-          href: '/(tabs)/comunicados',
+          href: isGuest ? null : '/(tabs)/comunicados',
         }}
       />
       <Tabs.Screen
@@ -101,7 +100,14 @@ export default function TabsLayout() {
           title: 'Dashboard',
           tabBarIcon: ({ color }) => <TabIcon icon="📊" color={color} />,
           // REPORTANTE no tiene acceso al Dashboard
-          href: user?.rol !== Rol.REPORTANTE ? '/(tabs)/estadisticas' : null,
+          href: !isGuest && user?.rol !== Rol.REPORTANTE ? '/(tabs)/estadisticas' : null,
+        }}
+      />
+      <Tabs.Screen
+        name="ajustes"
+        options={{
+          title: 'Ajustes',
+          tabBarIcon: ({ color }) => <TabIcon icon="⚙️" color={color} />,
         }}
       />
     </Tabs>

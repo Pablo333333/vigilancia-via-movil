@@ -25,7 +25,7 @@ import { NotificationsService } from '../services/notifications.service';
 import type { ApiError } from '../types';
 
 export default function LoginScreen() {
-  const { login } = useAuth();
+  const { login, continueAsGuest } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -132,6 +132,14 @@ export default function LoginScreen() {
             <Text style={styles.buttonText}>Ingresar</Text>
           )}
         </Pressable>
+
+        <Pressable
+          style={styles.guestButton}
+          onPress={continueAsGuest}
+          disabled={isLoading}
+        >
+          <Text style={styles.guestButtonText}>REPORTAR SIN REGISTRO</Text>
+        </Pressable>
       </View>
     </KeyboardAvoidingView>
   );
@@ -220,5 +228,18 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  guestButton: {
+    marginTop: 16,
+    paddingVertical: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#1a73e8',
+    borderRadius: 10,
+  },
+  guestButtonText: {
+    color: '#1a73e8',
+    fontSize: 14,
+    fontWeight: '700',
   },
 });

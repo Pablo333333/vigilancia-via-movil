@@ -316,6 +316,12 @@ export default function NewReportScreen() {
                 </Pressable>
               );
             })}
+            <Pressable
+              style={styles.modalCloseBtn}
+              onPress={() => setPickerVisible(false)}
+            >
+              <Text style={styles.modalCloseBtnText}>Cerrar</Text>
+            </Pressable>
           </View>
         </Pressable>
       </Modal>
@@ -487,4 +493,16 @@ const styles = StyleSheet.create({
   modalOptionText: { fontSize: 18, color: '#374151' },
   modalOptionTextSelected: { color: '#1a73e8', fontWeight: '600' },
   modalCheck: { color: '#1a73e8', fontSize: 19, fontWeight: '700' },
+  modalCloseBtn: {
+    marginTop: 16,
+    paddingVertical: 14,
+    backgroundColor: '#f3f4f6',
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  modalCloseBtnText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#374151',
+  },
 });
