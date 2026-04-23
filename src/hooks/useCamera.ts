@@ -17,18 +17,14 @@ interface UseCameraReturn {
   hasGalleryPermission: boolean;
   takePhoto: () => Promise<FotoSeleccionada | null>;
   pickFromGallery: () => Promise<FotoSeleccionada | null>;
+  setFoto: (foto: FotoSeleccionada | null) => void;
   clearFoto: () => void;
 }
 
 const IMAGE_OPTIONS: ImagePicker.ImagePickerOptions = {
   mediaTypes: ['images'],
-  allowsEditing: true,
-  aspect: [4, 3],
-  quality: 0.8,   // 80% calidad — equilibrio entre nitidez y tamaño
-  // Nota: Estas opciones pueden no ser soportadas por todas las versiones de expo-image-picker
-  // pero intentamos forzar los labels para que coincidan con lo pedido.
-  confirmLabel: 'Guardar',
-  cancelLabel: 'Cancelar',
+  allowsEditing: false, // Desactivamos el recorte nativo para evitar el botón "Cortar" en Android
+  quality: 0.8,
 };
 
 function buildFotoFromResult(
@@ -73,9 +69,7 @@ export function useCamera(): UseCameraReturn {
 
     if (result.canceled) return null;
 
-    const nuevaFoto = buildFotoFromResult(result);
-    setFoto(nuevaFoto);
-    return nuevaFoto;
+    return buildFotoFromResult(result);
   }, [hasCameraPermission]);
 
   /**
@@ -90,9 +84,7 @@ export function useCamera(): UseCameraReturn {
 
     if (result.canceled) return null;
 
-    const nuevaFoto = buildFotoFromResult(result);
-    setFoto(nuevaFoto);
-    return nuevaFoto;
+    return buildFotoFromResult(result);
   }, [hasGalleryPermission]);
 
   const clearFoto = useCallback(() => setFoto(null), []);
@@ -103,6 +95,7 @@ export function useCamera(): UseCameraReturn {
     hasGalleryPermission,
     takePhoto,
     pickFromGallery,
+    setFoto,
     clearFoto,
   };
 }

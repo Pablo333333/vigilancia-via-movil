@@ -81,6 +81,7 @@
     "ios": {
       "supportsTablet": false,
       "infoPlist": {
+        "CFBundleDevelopmentRegion": "es",
         "NSLocationWhenInUseUsageDescription": "La app necesita la ubicación para registrar el incidente.",
         "NSCameraUsageDescription": "La app necesita la cámara para fotografiar el incidente.",
         "NSPhotoLibraryUsageDescription": "La app necesita acceso a la galería para adjuntar fotos."

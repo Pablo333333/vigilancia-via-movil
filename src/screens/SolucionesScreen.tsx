@@ -25,6 +25,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { PhotoPreviewModal } from '../components/PhotoPreviewModal';
 import { useCamera } from '../hooks/useCamera';
 import { useAuth } from '../hooks/useAuth';
 import { ReportsService } from '../services/reports.service';
@@ -270,7 +271,8 @@ function ResolucionModal({
   onClose: () => void;
   onSuccess: () => void;
 }) {
-  const { foto, hasCameraPermission, takePhoto, pickFromGallery, clearFoto } = useCamera();
+  const { foto, hasCameraPermission, takePhoto, pickFromGallery, clearFoto, setFoto } = useCamera();
+  const [fotoTemp, setFotoTemp] = useState<FotoSeleccionada | null>(null);
   const [comentario, setComentario] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -291,11 +293,13 @@ function ResolucionModal({
       Alert.alert('Permiso requerido', 'Activá el permiso de cámara en la configuración.');
       return;
     }
-    await takePhoto();
+    const res = await takePhoto();
+    if (res) setFotoTemp(res);
   };
 
   const handleGaleria = async () => {
-    await pickFromGallery();
+    const res = await pickFromGallery();
+    if (res) setFotoTemp(res);
   };
 
   const handleSubmit = async () => {
@@ -416,6 +420,17 @@ function ResolucionModal({
           </Pressable>
         </KeyboardAvoidingView>
       </Pressable>
+
+      {/* ─── Previsualización de Foto ─────────────────────────────── */}
+      <PhotoPreviewModal
+        visible={!!fotoTemp}
+        uri={fotoTemp?.uri ?? null}
+        onConfirm={() => {
+          setFoto(fotoTemp);
+          setFotoTemp(null);
+        }}
+        onCancel={() => setFotoTemp(null)}
+      />
     </Modal>
   );
 }

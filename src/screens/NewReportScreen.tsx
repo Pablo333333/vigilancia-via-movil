@@ -27,6 +27,7 @@ import {
   View,
 } from 'react-native';
 import { API_CONFIG } from '../config/api.config';
+import { PhotoPreviewModal } from '../components/PhotoPreviewModal';
 import { useCamera } from '../hooks/useCamera';
 import { useLocation } from '../hooks/useLocation';
 import apiClient from '../services/api.client';
@@ -42,8 +43,9 @@ const TIPOS = Object.values(TipoProblema);
 
 export default function NewReportScreen() {
   const { getCurrentLocation, startWatching, stopWatching, coordenadas, hasPermission: hasLocationPermission, error: locationError } = useLocation();
-  const { foto, hasCameraPermission, takePhoto, pickFromGallery, clearFoto } = useCamera();
+  const { foto, hasCameraPermission, takePhoto, pickFromGallery, clearFoto, setFoto } = useCamera();
 
+  const [fotoTemp, setFotoTemp] = useState<FotoSeleccionada | null>(null);
   const [tipoSeleccionado, setTipoSeleccionado] = useState<TipoProblema>(TipoProblema.PIEDRAS_VIA);
   const [comentario, setComentario] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -65,7 +67,8 @@ export default function NewReportScreen() {
       return;
     }
     try {
-      await takePhoto();
+      const res = await takePhoto();
+      if (res) setFotoTemp(res);
     } catch {
       Alert.alert('Error', 'No se pudo acceder a la cámara.');
     }
@@ -73,7 +76,8 @@ export default function NewReportScreen() {
 
   const handleGaleria = useCallback(async () => {
     try {
-      await pickFromGallery();
+      const res = await pickFromGallery();
+      if (res) setFotoTemp(res);
     } catch {
       Alert.alert('Error', 'No se pudo acceder a la galería.');
     }
@@ -212,28 +216,12 @@ export default function NewReportScreen() {
           </View>
         )}
 
-        {/* ─── GPS ──────────────────────────────────────────────────── */}
-        <Text style={styles.sectionLabel}>Estado del GPS</Text>
-        <View style={styles.gpsCard}>
-          {locationError ? (
-            <Text style={styles.gpsError}>{locationError}</Text>
-          ) : coordenadas ? (
-            <>
-              <View style={styles.gpsRow}>
-                <Text style={styles.gpsDot}>🟢</Text>
-                <Text style={styles.gpsCoords}>
-                  Ubicación fijada correctamente
-                </Text>
-              </View>
-              <Text style={styles.gpsPrecision}>La posición se enviará con el reporte</Text>
-            </>
-          ) : (
-            <View style={styles.gpsLoading}>
-              <ActivityIndicator size="small" color="#1a73e8" />
-              <Text style={styles.gpsLoadingText}>Obteniendo ubicación…</Text>
-            </View>
-          )}
-        </View>
+        {/* ─── GPS (Sin feedback visual según pedido) ────────────────── */}
+        {locationError ? (
+          <View style={styles.errorBox}>
+            <Text style={styles.errorText}>{locationError}</Text>
+          </View>
+        ) : null}
 
         {/* ─── Tipo de problema ─────────────────────────────────────── */}
         <Text style={styles.sectionLabel}>Tipo de problema</Text>
@@ -287,6 +275,17 @@ export default function NewReportScreen() {
           )}
         </Pressable>
       </ScrollView>
+
+      {/* ─── Previsualización de Foto ─────────────────────────────── */}
+      <PhotoPreviewModal
+        visible={!!fotoTemp}
+        uri={fotoTemp?.uri ?? null}
+        onConfirm={() => {
+          setFoto(fotoTemp);
+          setFotoTemp(null);
+        }}
+        onCancel={() => setFotoTemp(null)}
+      />
 
       {/* ─── Modal picker de tipo ─────────────────────────────────── */}
       <Modal

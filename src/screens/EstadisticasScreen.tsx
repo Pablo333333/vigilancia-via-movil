@@ -155,29 +155,53 @@ export default function EstadisticasScreen() {
     const top = counts.slice(0, 5);
     const otrosCount = counts.slice(5).reduce((s, x) => s + x.count, 0);
 
-    const result = top.map((x, i) => {
-      const label = TIPO_PROBLEMA_LABELS[x.tipo];
-      // truncate long labels
-      const short = label.length > 18 ? label.slice(0, 16) + '…' : label;
+    // Preparamos los items para el gráfico (Top 5 + Otros si existe)
+    const chartItems = top.map(x => ({
+      label: TIPO_PROBLEMA_LABELS[x.tipo],
+      count: x.count,
+    }));
+
+    if (otrosCount > 0) {
+      chartItems.push({
+        label: 'Otros',
+        count: otrosCount,
+      });
+    }
+
+    const totalCount = chartItems.reduce((acc, curr) => acc + curr.count, 0);
+
+    // 1. Calcular porcentajes como enteros (redondeo hacia abajo)
+    let finalData = chartItems.map(item => ({
+      ...item,
+      percentage: totalCount > 0 ? Math.floor((item.count / totalCount) * 100) : 0,
+    }));
+
+    // 2. Ajustar para que la suma sea exactamente 100
+    if (totalCount > 0 && finalData.length > 0) {
+      const currentSum = finalData.reduce((acc, curr) => acc + curr.percentage, 0);
+      const diff = 100 - currentSum;
+      if (diff !== 0) {
+        // Buscamos el de mayor valor para aplicar el ajuste
+        let maxIdx = 0;
+        for (let i = 1; i < finalData.length; i++) {
+          if (finalData[i].count > finalData[maxIdx].count) maxIdx = i;
+        }
+        finalData[maxIdx].percentage += diff;
+      }
+    }
+
+    // 3. Formatear para el componente PieChart
+    return finalData.map((x, i) => {
+      // Truncar etiquetas largas
+      const short = x.label.length > 18 ? x.label.slice(0, 16) + '…' : x.label;
       return {
-        name: short,
-        population: x.count,
-        color: PIE_COLORS[i] ?? '#9ca3af',
+        name: `${short}: ${x.count}`, // Leyenda: "Nombre: 5"
+        population: x.percentage,      // El dibujo usa el porcentaje corregido
+        color: x.label === 'Otros' ? '#9ca3af' : (PIE_COLORS[i] ?? '#9ca3af'),
         legendFontColor: '#374151',
         legendFontSize: 11,
       };
     });
-
-    if (otrosCount > 0) {
-      result.push({
-        name: 'Otros',
-        population: otrosCount,
-        color: '#9ca3af',
-        legendFontColor: '#374151',
-        legendFontSize: 11,
-      });
-    }
-    return result;
   }, [filtered]);
 
   // ── Datos para gráfico de barras (últimos 7 días — siempre fijo) ─────────────
