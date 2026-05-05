@@ -39,7 +39,35 @@ import {
   type Reporte,
 } from '../types';
 
+import {
+  AlertTriangle,
+  Droplets,
+  Construction,
+  Zap,
+  Trash2,
+  Trees,
+  Camera,
+  MessageSquare,
+  Image as ImageIcon,
+  ChevronDown,
+  Navigation,
+  Check
+} from 'lucide-react-native';
+import { THEME } from '../constants/theme';
+
 const TIPOS = Object.values(TipoProblema);
+
+const TIPO_ICONS: Record<TipoProblema, any> = {
+  [TipoProblema.PIEDRAS_VIA]: AlertTriangle,
+  [TipoProblema.BACHE]: AlertTriangle,
+  [TipoProblema.INUNDACION]: Droplets,
+  [TipoProblema.OBRA_SIN_SENAL]: Construction,
+  [TipoProblema.CABLE_SUELTO]: Zap,
+  [TipoProblema.BASURA_ACUMULADA]: Trash2,
+  [TipoProblema.ARBOL_CAIDO]: Trees,
+  [TipoProblema.SEMAFORO_FALLA]: Zap,
+  [TipoProblema.OTRO]: MessageSquare,
+};
 
 export default function NewReportScreen() {
   const { getCurrentLocation, startWatching, stopWatching, coordenadas, hasPermission: hasLocationPermission, error: locationError } = useLocation();
@@ -197,47 +225,67 @@ export default function NewReportScreen() {
             <Image source={{ uri: foto.uri }} style={styles.fotoPreview} resizeMode="cover" />
             <View style={styles.fotoActions}>
               <Pressable style={styles.fotoActionBtn} onPress={handleTomarFoto}>
-                <Text style={styles.fotoActionText}>📷 Retomar</Text>
+                <Camera size={20} color={THEME.colors.primary} />
+                <Text style={styles.fotoActionText}>Retomar</Text>
               </Pressable>
               <Pressable style={[styles.fotoActionBtn, styles.fotoActionRemove]} onPress={clearFoto}>
-                <Text style={[styles.fotoActionText, { color: '#dc2626' }]}>✕ Quitar</Text>
+                <Text style={[styles.fotoActionText, { color: THEME.colors.danger }]}>✕ Quitar</Text>
               </Pressable>
             </View>
           </View>
         ) : (
           <View style={styles.fotoBtns}>
             <Pressable style={styles.fotoBtnPrimary} onPress={handleTomarFoto}>
-              <Text style={styles.fotoBtnIcon}>📷</Text>
+              <Camera size={32} color={THEME.colors.white} />
               <Text style={styles.fotoBtnPrimaryText}>Tomar foto</Text>
             </Pressable>
             <Pressable style={styles.fotoBtnSecondary} onPress={handleGaleria}>
-              <Text style={styles.fotoBtnSecondaryText}>🖼 Galería</Text>
+              <ImageIcon size={24} color={THEME.colors.primary} />
+              <Text style={styles.fotoBtnSecondaryText}>Galería</Text>
             </Pressable>
           </View>
         )}
 
-        {/* ─── GPS (Sin feedback visual según pedido) ────────────────── */}
-        {locationError ? (
-          <View style={styles.errorBox}>
-            <Text style={styles.errorText}>{locationError}</Text>
-          </View>
-        ) : null}
-
-        {/* ─── Tipo de problema ─────────────────────────────────────── */}
-        <Text style={styles.sectionLabel}>Tipo de problema</Text>
-        <Pressable style={styles.pickerTrigger} onPress={() => setPickerVisible(true)}>
-          <Text style={styles.pickerTriggerText}>
-            {TIPO_PROBLEMA_LABELS[tipoSeleccionado]}
-          </Text>
-          <Text style={styles.pickerChevron}>▾</Text>
-        </Pressable>
+        {/* ─── Tipo de problema (Grilla 2 columnas) ─────────────────── */}
+        <Text style={styles.sectionLabel}>¿Qué problema ves?</Text>
+        <View style={styles.grid}>
+          {TIPOS.map((tipo) => {
+            const Icon = TIPO_ICONS[tipo] || AlertTriangle;
+            const isSelected = tipo === tipoSeleccionado;
+            return (
+              <Pressable
+                key={tipo}
+                style={[
+                  styles.gridCard,
+                  isSelected && styles.gridCardSelected
+                ]}
+                onPress={() => setTipoSeleccionado(tipo)}
+              >
+                <View style={[styles.gridIconCircle, isSelected && styles.gridIconCircleSelected]}>
+                  <Icon 
+                    size={28} 
+                    color={isSelected ? THEME.colors.white : THEME.colors.primary} 
+                  />
+                </View>
+                <Text style={[styles.gridText, isSelected && styles.gridTextSelected]}>
+                  {TIPO_PROBLEMA_LABELS[tipo]}
+                </Text>
+                {isSelected && (
+                  <View style={styles.checkBadge}>
+                    <Check size={12} color={THEME.colors.white} />
+                  </View>
+                )}
+              </Pressable>
+            );
+          })}
+        </View>
 
         {/* ─── Comentario ───────────────────────────────────────────── */}
         <Text style={styles.sectionLabel}>Comentario <Text style={styles.optional}>(opcional)</Text></Text>
         <TextInput
           style={styles.textArea}
           placeholder="Describí el problema con más detalle…"
-          placeholderTextColor="#9ca3af"
+          placeholderTextColor={THEME.colors.textLight}
           multiline
           numberOfLines={4}
           textAlignVertical="top"
@@ -252,26 +300,19 @@ export default function NewReportScreen() {
           </View>
         ) : null}
 
-        {/* ─── Progreso de subida ───────────────────────────────────── */}
-        {isSubmitting && uploadProgress > 0 && uploadProgress < 100 ? (
-          <View style={styles.progressWrap}>
-            <View style={styles.progressTrack}>
-              <View style={[styles.progressBar, { width: `${uploadProgress}%` }]} />
-            </View>
-            <Text style={styles.progressText}>Enviando… {uploadProgress}%</Text>
-          </View>
-        ) : null}
-
-        {/* ─── Botón enviar ─────────────────────────────────────────── */}
+        {/* ─── Submit ─────────────────────────────────────────── */}
         <Pressable
           style={[styles.submitBtn, isSubmitting && styles.submitBtnDisabled]}
           onPress={handleSubmit}
           disabled={isSubmitting}
         >
           {isSubmitting ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={THEME.colors.white} />
           ) : (
-            <Text style={styles.submitBtnText}>📍 Enviar Reporte</Text>
+            <>
+              <Navigation size={24} color={THEME.colors.white} />
+              <Text style={styles.submitBtnText}>Enviar Reporte</Text>
+            </>
           )}
         </Pressable>
       </ScrollView>
@@ -330,179 +371,174 @@ export default function NewReportScreen() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#f0f4ff' },
+  root: { flex: 1, backgroundColor: THEME.colors.background },
+  header: {
+    backgroundColor: THEME.colors.primary,
+    paddingTop: Platform.OS === 'ios' ? 60 : 40,
+    paddingBottom: 25,
+    paddingHorizontal: 20,
+    borderBottomLeftRadius: THEME.sizes.radius,
+    borderBottomRightRadius: THEME.sizes.radius,
+    ...THEME.shadows.medium,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: THEME.colors.white,
+    textAlign: 'center',
+  },
   content: { padding: 20, paddingBottom: 48 },
 
   sectionLabel: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#6b7280',
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
-    marginTop: 20,
-    marginBottom: 8,
+    fontSize: 16,
+    fontWeight: '800',
+    color: THEME.colors.primary,
+    marginTop: 24,
+    marginBottom: 12,
   },
-  optional: { fontWeight: '400', textTransform: 'none' },
+  optional: { fontWeight: '400', color: THEME.colors.textLight },
 
   // ─── Foto
-  fotoBtns: { flexDirection: 'row', gap: 10 },
+  fotoBtns: { flexDirection: 'row', gap: 12 },
   fotoBtnPrimary: {
+    flex: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    backgroundColor: THEME.colors.accent,
+    borderRadius: THEME.sizes.radius,
+    paddingVertical: 18,
+    ...THEME.shadows.soft,
+  },
+  fotoBtnPrimaryText: { color: THEME.colors.white, fontSize: 18, fontWeight: '700' },
+  fotoBtnSecondary: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#1a73e8',
-    borderRadius: 12,
-    paddingVertical: 16,
+    borderRadius: THEME.sizes.radius,
+    borderWidth: 2,
+    borderColor: THEME.colors.borderBlue,
+    backgroundColor: THEME.colors.white,
+    paddingVertical: 18,
   },
-  fotoBtnIcon: { fontSize: 26 },
-  fotoBtnPrimaryText: { color: '#fff', fontSize: 18, fontWeight: '600' },
-  fotoBtnSecondary: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: '#d1d5db',
-    backgroundColor: '#fff',
+  fotoBtnSecondaryText: { color: THEME.colors.primary, fontSize: 16, fontWeight: '600' },
+
+  fotoPreviewContainer: { gap: 12 },
+  fotoPreview: { width: '100%', height: 220, borderRadius: THEME.sizes.radius, borderWidth: 1, borderColor: THEME.colors.borderBlue },
+  fotoActions: { flexDirection: 'row', gap: 12 },
+  fotoActionBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    borderRadius: THEME.sizes.radius,
+    backgroundColor: THEME.colors.cardYellow,
+    borderWidth: 1,
+    borderColor: THEME.colors.borderBlue,
+  },
+  fotoActionRemove: { backgroundColor: '#FEE2E2', borderColor: '#FECACA' },
+  fotoActionText: { fontSize: 16, fontWeight: '600', color: THEME.colors.primary },
+
+  // ─── Grilla de tipos
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  gridCard: {
+    width: '48%',
+    backgroundColor: THEME.colors.cardYellow,
+    borderRadius: THEME.sizes.radius,
+    padding: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: THEME.colors.borderBlue,
+    aspectRatio: 1.1,
+    ...THEME.shadows.soft,
+  },
+  gridCardSelected: {
+    backgroundColor: THEME.colors.primary,
+    borderColor: THEME.colors.primary,
+  },
+  gridIconCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: THEME.colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: THEME.colors.borderBlue,
+  },
+  gridIconCircleSelected: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderColor: 'transparent',
+  },
+  gridText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: THEME.colors.primary,
+    textAlign: 'center',
+  },
+  gridTextSelected: {
+    color: THEME.colors.white,
+  },
+  checkBadge: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: THEME.colors.accent,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  fotoBtnSecondaryText: { color: '#374151', fontSize: 17 },
-
-  fotoPreviewContainer: { gap: 8 },
-  fotoPreview: { width: '100%', height: 200, borderRadius: 12 },
-  fotoActions: { flexDirection: 'row', gap: 8 },
-  fotoActionBtn: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: 8,
-    backgroundColor: '#f3f4f6',
-    alignItems: 'center',
-  },
-  fotoActionRemove: { backgroundColor: '#fee2e2' },
-  fotoActionText: { fontSize: 16, fontWeight: '500', color: '#374151' },
-
-  // ─── GPS
-  gpsCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-  },
-  gpsRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  gpsDot: { fontSize: 14 },
-  gpsCoords: { fontSize: 16, color: '#111827', fontFamily: 'monospace' },
-  gpsPrecision: { fontSize: 14, color: '#6b7280', marginTop: 4 },
-  gpsLoading: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  gpsLoadingText: { fontSize: 16, color: '#6b7280' },
-  gpsError: { fontSize: 16, color: '#dc2626' },
-
-  // ─── Picker trigger
-  pickerTrigger: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  pickerTriggerText: { fontSize: 18, color: '#111827' },
-  pickerChevron: { fontSize: 17, color: '#6b7280' },
 
   // ─── Comentario
   textArea: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    backgroundColor: THEME.colors.white,
+    borderRadius: THEME.sizes.radius,
     borderWidth: 1,
-    borderColor: '#d1d5db',
-    padding: 14,
-    fontSize: 18,
-    color: '#111827',
-    minHeight: 100,
+    borderColor: THEME.colors.borderBlue,
+    padding: 16,
+    fontSize: 16,
+    color: THEME.colors.text,
+    minHeight: 120,
+    ...THEME.shadows.soft,
   },
 
   // ─── Error
   errorBox: {
-    backgroundColor: '#fee2e2',
-    borderRadius: 10,
-    padding: 12,
-    marginTop: 12,
+    backgroundColor: '#FEE2E2',
+    borderRadius: THEME.sizes.radius,
+    padding: 16,
+    marginTop: 20,
+    borderWidth: 1,
+    borderColor: '#FECACA',
   },
-  errorText: { color: '#dc2626', fontSize: 16 },
-
-  // ─── Progreso
-  progressWrap: { marginTop: 12, gap: 4 },
-  progressTrack: { height: 6, backgroundColor: '#e5e7eb', borderRadius: 3, overflow: 'hidden' },
-  progressBar: { height: '100%', backgroundColor: '#1a73e8' },
-  progressText: { fontSize: 14, color: '#6b7280', textAlign: 'right' },
+  errorText: { color: THEME.colors.danger, fontSize: 15, fontWeight: '600', textAlign: 'center' },
 
   // ─── Submit
   submitBtn: {
-    backgroundColor: '#16a34a',
-    borderRadius: 14,
-    paddingVertical: 16,
+    flexDirection: 'row',
+    backgroundColor: THEME.colors.accent,
+    borderRadius: THEME.sizes.radius,
+    paddingVertical: 20,
     alignItems: 'center',
-    marginTop: 28,
+    justifyContent: 'center',
+    gap: 12,
+    marginTop: 32,
+    ...THEME.shadows.medium,
   },
   submitBtnDisabled: { opacity: 0.6 },
-  submitBtnText: { color: '#fff', fontSize: 19, fontWeight: '700' },
-
-  // ─── Modal picker
-  modalOverlay: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0,0,0,0.4)',
-  },
-  modalSheet: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 20,
-    paddingBottom: 36,
-  },
-  modalHandle: {
-    width: 40,
-    height: 4,
-    backgroundColor: '#d1d5db',
-    borderRadius: 2,
-    alignSelf: 'center',
-    marginBottom: 16,
-  },
-  modalTitle: {
-    fontSize: 19,
-    fontWeight: '700',
-    color: '#111827',
-    marginBottom: 12,
-    textAlign: 'center',
-  },
-  modalOption: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 4,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
-  },
-  modalOptionSelected: { backgroundColor: '#eff6ff', marginHorizontal: -4, paddingHorizontal: 8, borderRadius: 8 },
-  modalOptionText: { fontSize: 18, color: '#374151' },
-  modalOptionTextSelected: { color: '#1a73e8', fontWeight: '600' },
-  modalCheck: { color: '#1a73e8', fontSize: 19, fontWeight: '700' },
-  modalCloseBtn: {
-    marginTop: 16,
-    paddingVertical: 14,
-    backgroundColor: '#f3f4f6',
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  modalCloseBtnText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#374151',
-  },
+  submitBtnText: { color: THEME.colors.white, fontSize: 20, fontWeight: '800' },
 });

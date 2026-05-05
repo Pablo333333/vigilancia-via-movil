@@ -24,6 +24,7 @@ import {
   Text,
   TextInput,
   View,
+  TouchableOpacity
 } from 'react-native';
 import { PhotoPreviewModal } from '../components/PhotoPreviewModal';
 import { useCamera } from '../hooks/useCamera';
@@ -37,16 +38,33 @@ import {
   type Reporte,
 } from '../types';
 
+import {
+  AlertCircle,
+  Clock,
+  CheckCircle2,
+  Lock,
+  RefreshCcw,
+  MapPin,
+  Calendar,
+  ChevronRight,
+  Eye,
+  Check,
+  Plus
+} from 'lucide-react-native';
+import { THEME } from '../constants/theme';
+
 // ─── Constantes ────────────────────────────────────────────────────────────────
 
 const ESTADO_COLORS: Record<string, string> = {
-  PENDIENTE: '#f59e0b',
-  EN_PROCESO: '#3b82f6',
+  PENDIENTE: '#FADBD8', // Rojo suave
+  EN_PROCESO: THEME.colors.warning, // Naranja/Amarillo
+  SOLUCIONADO: THEME.colors.success, // Verde
 };
 
 const ESTADO_LABELS: Record<string, string> = {
   PENDIENTE: 'Pendiente',
   EN_PROCESO: 'En proceso',
+  SOLUCIONADO: 'Solucionado',
 };
 
 // ─── Componente principal ──────────────────────────────────────────────────────
@@ -58,7 +76,9 @@ export default function SolucionesScreen() {
   if (user && user.rol === Rol.REPORTANTE) {
     return (
       <View style={styles.center}>
-        <Text style={styles.lockIcon}>🔒</Text>
+        <View style={styles.lockCircle}>
+          <Lock size={48} color={THEME.colors.primary} />
+        </View>
         <Text style={styles.lockTitle}>Acceso restringido</Text>
         <Text style={styles.lockSubtitle}>
           Esta sección está disponible solo para Responsables y Supervisores.
@@ -69,7 +89,11 @@ export default function SolucionesScreen() {
 
   // SUPERVISOR puede ver pero NO intervenir
   const canEdit = user?.rol === Rol.RESPONSABLE;
-  return <SolucionesList canEdit={canEdit} />;
+  return (
+    <View style={styles.root}>
+      <SolucionesList canEdit={canEdit} />
+    </View>
+  );
 }
 
 // ─── Lista de reportes ────────────────────────────────────────────────────────
@@ -128,7 +152,7 @@ function SolucionesList({ canEdit }: { canEdit: boolean }) {
   if (isLoading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#1a73e8" />
+        <ActivityIndicator size="large" color={THEME.colors.primary} />
         <Text style={styles.loadingText}>Cargando reportes…</Text>
       </View>
     );
@@ -144,7 +168,7 @@ function SolucionesList({ canEdit }: { canEdit: boolean }) {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => { setRefreshing(true); fetchReportes(); }}
-            colors={['#1a73e8']}
+            colors={[THEME.colors.primary]}
           />
         }
         ListHeaderComponent={
@@ -198,65 +222,47 @@ function ReporteCard({
   onTomarEnMano: () => void;
   onResolver: () => void;
 }) {
+  const statusColor = ESTADO_COLORS[reporte.estado] || THEME.colors.textLight;
+  
   return (
-    <View style={styles.card}>
-      {/* Header */}
-      <View style={styles.cardHeader}>
-        <Text style={styles.cardTipo} numberOfLines={1}>
-          {TIPO_PROBLEMA_LABELS[reporte.tipoProblema] ?? reporte.tipoProblema}
-        </Text>
-        <View style={[styles.badge, { backgroundColor: ESTADO_COLORS[reporte.estado] ?? '#6b7280' }]}>
-          <Text style={styles.badgeText}>{ESTADO_LABELS[reporte.estado] ?? reporte.estado}</Text>
-        </View>
-      </View>
-
-      {/* Foto del incidente (si existe) */}
-      {reporte.fotoUrl ? (
-        <Image source={{ uri: reporte.fotoUrl }} style={styles.cardFoto} resizeMode="cover" />
-      ) : null}
-
-      {/* Comentario */}
-      {reporte.comentario ? (
-        <Text style={styles.cardComment} numberOfLines={3}>{reporte.comentario}</Text>
-      ) : null}
-
-      {/* Coordenadas */}
-      <Text style={styles.cardCoords}>
-        📍 {reporte.latitud.toFixed(5)}, {reporte.longitud.toFixed(5)}
-      </Text>
-
-      {/* Fecha */}
-      <Text style={styles.cardDate}>
-        {new Date(reporte.fechaCreacion).toLocaleDateString('es-AR', {
-          day: '2-digit', month: 'short', year: 'numeric',
-        })}
-      </Text>
-
-      {/* Acciones — solo RESPONSABLE puede intervenir; SUPERVISOR es solo lectura */}
-      {canEdit ? (
-        <View style={styles.cardActions}>
-          {reporte.estado === EstadoReporte.PENDIENTE && (
-            <Pressable
-              style={[styles.actionBtnSecondary, isTomarEnManoLoading && styles.btnDisabled]}
-              onPress={onTomarEnMano}
-              disabled={isTomarEnManoLoading}
-            >
-              {isTomarEnManoLoading
-                ? <ActivityIndicator size="small" color="#1a73e8" />
-                : <Text style={styles.actionBtnSecondaryText}>🔵 Tomar en mano</Text>
-              }
-            </Pressable>
+    <TouchableOpacity 
+      style={styles.card} 
+      onPress={canEdit ? onResolver : undefined}
+      activeOpacity={0.7}
+    >
+      <View style={styles.cardRow}>
+        {/* Icono Check Circular a la izquierda */}
+        <View style={[styles.checkCircle, { borderColor: statusColor }]}>
+          {reporte.estado === EstadoReporte.EN_PROCESO ? (
+            <Clock size={18} color={statusColor} />
+          ) : (
+            <Check size={18} color={statusColor} />
           )}
-          <Pressable style={styles.actionBtnPrimary} onPress={onResolver}>
-            <Text style={styles.actionBtnPrimaryText}>✅ Resolver</Text>
-          </Pressable>
         </View>
-      ) : (
-        <View style={styles.readOnlyBadge}>
-          <Text style={styles.readOnlyText}>👁 Modo auditoría — sin acciones</Text>
+
+        {/* Contenido Central: Título y Badge */}
+        <View style={styles.cardMainContent}>
+          <View style={styles.titleBadgeRow}>
+            <Text style={styles.cardTipo} numberOfLines={1}>
+              {TIPO_PROBLEMA_LABELS[reporte.tipoProblema] ?? reporte.tipoProblema}
+            </Text>
+            <View style={[styles.badge, { backgroundColor: statusColor }]}>
+              <Text style={styles.badgeText}>
+                {ESTADO_LABELS[reporte.estado] ?? reporte.estado}
+              </Text>
+            </View>
+          </View>
+          
+          <Text style={styles.cardDate}>
+            {new Date(reporte.fechaCreacion).toLocaleDateString('es-AR', {
+              day: '2-digit', month: 'short'
+            })} • {reporte.comentario || 'Sin descripción'}
+          </Text>
         </View>
-      )}
-    </View>
+
+        <ChevronRight size={20} color={THEME.colors.borderBlue} />
+      </View>
+    </TouchableOpacity>
   );
 }
 
@@ -438,138 +444,159 @@ function ResolucionModal({
 // ─── Estilos ──────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#f0f4ff' },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f0f4ff', padding: 32 },
-  loadingText: { marginTop: 12, color: '#6b7280', fontSize: 17 },
+  root: { flex: 1, backgroundColor: THEME.colors.background },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: THEME.colors.background, padding: 32 },
+  loadingText: { marginTop: 12, color: THEME.colors.textLight, fontSize: 17, fontWeight: '600' },
   list: { padding: 16, paddingBottom: 32 },
 
-  listHeader: { fontSize: 16, color: '#6b7280', fontWeight: '500', marginBottom: 12 },
+  listHeader: { fontSize: 16, color: THEME.colors.textLight, fontWeight: '700', marginBottom: 16, textAlign: 'center' },
 
   // Acceso denegado
-  lockIcon: { fontSize: 52, marginBottom: 14 },
-  lockTitle: { fontSize: 22, fontWeight: '700', color: '#374151', marginBottom: 8 },
-  lockSubtitle: { fontSize: 17, color: '#6b7280', textAlign: 'center', lineHeight: 22 },
+  lockCircle: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: THEME.colors.cardYellow,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+    borderWidth: 2,
+    borderColor: THEME.colors.borderBlue,
+  },
+  lockTitle: { fontSize: 24, fontWeight: '800', color: THEME.colors.primary, marginBottom: 12 },
+  lockSubtitle: { fontSize: 17, color: THEME.colors.textLight, textAlign: 'center', lineHeight: 24 },
 
   // Card
   card: {
-    backgroundColor: '#fff',
-    borderRadius: 14,
-    padding: 16,
-    marginBottom: 14,
+    backgroundColor: THEME.colors.white,
+    borderRadius: THEME.sizes.radius,
+    padding: 18,
+    marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 3,
-    elevation: 2,
+    borderColor: THEME.colors.borderBlue,
+    ...THEME.shadows.soft,
   },
-  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
-  cardTipo: { fontSize: 18, fontWeight: '700', color: '#111827', flex: 1, marginRight: 8 },
-  badge: { borderRadius: 12, paddingHorizontal: 10, paddingVertical: 3 },
-  badgeText: { color: '#fff', fontSize: 13, fontWeight: '700' },
-  cardFoto: { width: '100%', height: 140, borderRadius: 10, marginBottom: 10 },
-  cardComment: { fontSize: 16, color: '#374151', marginBottom: 8, lineHeight: 20 },
-  cardCoords: { fontSize: 14, color: '#6b7280', fontFamily: 'monospace', marginBottom: 4 },
-  cardDate: { fontSize: 13, color: '#9ca3af', marginBottom: 12 },
-
-  cardActions: { flexDirection: 'row', gap: 10 },
-  readOnlyBadge: {
-    backgroundColor: '#f3f4f6',
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+  cardRow: {
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 14,
   },
-  readOnlyText: { fontSize: 14, color: '#6b7280', fontWeight: '500' },
-  actionBtnSecondary: {
-    flex: 1, paddingVertical: 10, borderRadius: 10,
-    borderWidth: 1.5, borderColor: '#1a73e8',
-    alignItems: 'center', justifyContent: 'center',
+  checkCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: THEME.colors.white,
   },
-  actionBtnSecondaryText: { color: '#1a73e8', fontSize: 16, fontWeight: '600' },
-  actionBtnPrimary: {
-    flex: 1, paddingVertical: 10, borderRadius: 10,
-    backgroundColor: '#16a34a', alignItems: 'center', justifyContent: 'center',
+  cardMainContent: {
+    flex: 1,
+    gap: 4,
   },
-  actionBtnPrimaryText: { color: '#fff', fontSize: 16, fontWeight: '700' },
-  btnDisabled: { opacity: 0.5 },
+  titleBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  cardTipo: { 
+    fontSize: 18, 
+    fontWeight: '800', 
+    color: THEME.colors.primary, 
+    flexShrink: 1 
+  },
+  badge: { 
+    borderRadius: 20, 
+    paddingHorizontal: 10, 
+    paddingVertical: 4,
+  },
+  badgeText: { 
+    color: THEME.colors.primary, 
+    fontSize: 11, 
+    fontWeight: '800', 
+    textTransform: 'uppercase' 
+  },
+  cardDate: { 
+    fontSize: 14, 
+    color: THEME.colors.textLight, 
+    fontWeight: '600' 
+  },
 
   // Empty
   emptyContainer: { flex: 1 },
   emptyState: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 80 },
-  emptyIcon: { fontSize: 48, marginBottom: 12 },
-  emptyTitle: { fontSize: 22, fontWeight: '600', color: '#374151' },
-  emptySubtitle: { fontSize: 17, color: '#6b7280', marginTop: 4 },
+  emptyIcon: { fontSize: 64, marginBottom: 16 },
+  emptyTitle: { fontSize: 24, fontWeight: '800', color: THEME.colors.primary },
+  emptySubtitle: { fontSize: 17, color: THEME.colors.textLight, marginTop: 8, textAlign: 'center' },
 
   // Modal resolución
-  modalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.45)' },
+  modalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.6)' },
   modalKbWrapper: { justifyContent: 'flex-end' },
   modalSheet: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 22,
-    borderTopRightRadius: 22,
-    padding: 20,
-    paddingBottom: 36,
-    maxHeight: '85%',
+    backgroundColor: THEME.colors.white,
+    borderTopLeftRadius: THEME.sizes.radius,
+    borderTopRightRadius: THEME.sizes.radius,
+    padding: 24,
+    paddingBottom: 40,
+    maxHeight: '90%',
   },
   modalHandle: {
-    width: 40, height: 4, backgroundColor: '#d1d5db',
-    borderRadius: 2, alignSelf: 'center', marginBottom: 16,
+    width: 50, height: 6, backgroundColor: '#E5E7EB',
+    borderRadius: 3, alignSelf: 'center', marginBottom: 20,
   },
-  modalTitle: { fontSize: 20, fontWeight: '700', color: '#111827', marginBottom: 2 },
-  modalSubtitle: { fontSize: 16, color: '#6b7280', marginBottom: 16 },
+  modalTitle: { fontSize: 24, fontWeight: '800', color: THEME.colors.primary, marginBottom: 4 },
+  modalSubtitle: { fontSize: 18, color: THEME.colors.textLight, marginBottom: 24, fontWeight: '600' },
 
-  fieldLabel: { fontSize: 14, fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 16, marginBottom: 8 },
-  fieldLabelOptional: { fontWeight: '400', textTransform: 'none' },
+  fieldLabel: { fontSize: 14, fontWeight: '800', color: THEME.colors.primary, textTransform: 'uppercase', letterSpacing: 1, marginTop: 20, marginBottom: 10 },
+  fieldLabelOptional: { fontWeight: '400', textTransform: 'none', color: THEME.colors.textLight },
 
   // Foto evidencia
-  fotoBtns: { flexDirection: 'row', gap: 10 },
+  fotoBtns: { flexDirection: 'row', gap: 12 },
   fotoBtnPrimary: {
-    flex: 1, backgroundColor: '#1a73e8', borderRadius: 10,
-    paddingVertical: 12, alignItems: 'center',
+    flex: 1, backgroundColor: THEME.colors.accent, borderRadius: THEME.sizes.radius,
+    paddingVertical: 16, alignItems: 'center', ...THEME.shadows.soft,
   },
-  fotoBtnText: { color: '#fff', fontSize: 17, fontWeight: '600' },
+  fotoBtnText: { color: THEME.colors.white, fontSize: 17, fontWeight: '800' },
   fotoBtnSecondary: {
-    paddingHorizontal: 16, paddingVertical: 12, borderRadius: 10,
-    borderWidth: 1.5, borderColor: '#d1d5db', backgroundColor: '#fff',
+    paddingHorizontal: 20, paddingVertical: 16, borderRadius: THEME.sizes.radius,
+    borderWidth: 2, borderColor: THEME.colors.borderBlue, backgroundColor: THEME.colors.white,
     alignItems: 'center', justifyContent: 'center',
   },
-  fotoBtnSecondaryText: { color: '#374151', fontSize: 16 },
+  fotoBtnSecondaryText: { color: THEME.colors.primary, fontSize: 16, fontWeight: '700' },
   fotoPreviewWrap: { position: 'relative' },
-  fotoPreview: { width: '100%', height: 160, borderRadius: 12 },
+  fotoPreview: { width: '100%', height: 200, borderRadius: THEME.sizes.radius, borderWidth: 1, borderColor: THEME.colors.borderBlue },
   fotoRemoveBtn: {
-    position: 'absolute', top: 8, right: 8,
-    backgroundColor: 'rgba(0,0,0,0.55)', borderRadius: 14,
-    paddingHorizontal: 10, paddingVertical: 4,
+    position: 'absolute', top: 12, right: 12,
+    backgroundColor: 'rgba(0,0,0,0.7)', borderRadius: 20,
+    paddingHorizontal: 12, paddingVertical: 6,
   },
-  fotoRemoveText: { color: '#fff', fontSize: 14 },
+  fotoRemoveText: { color: THEME.colors.white, fontSize: 14, fontWeight: '700' },
 
   // TextArea
   textArea: {
-    backgroundColor: '#f9fafb', borderRadius: 10, borderWidth: 1,
-    borderColor: '#d1d5db', padding: 12, fontSize: 17,
-    color: '#111827', minHeight: 90,
+    backgroundColor: THEME.colors.cardYellow, borderRadius: THEME.sizes.radius, borderWidth: 1,
+    borderColor: THEME.colors.borderBlue, padding: 16, fontSize: 17,
+    color: THEME.colors.text, minHeight: 100, ...THEME.shadows.soft,
   },
 
   // Error / Progress
-  errorBox: { backgroundColor: '#fee2e2', borderRadius: 8, padding: 10, marginTop: 10 },
-  errorText: { color: '#dc2626', fontSize: 16 },
-  progressWrap: { marginTop: 10, gap: 4 },
-  progressTrack: { height: 5, backgroundColor: '#e5e7eb', borderRadius: 3, overflow: 'hidden' },
-  progressBar: { height: '100%', backgroundColor: '#16a34a' },
-  progressText: { fontSize: 13, color: '#6b7280', textAlign: 'right' },
+  errorBox: { backgroundColor: '#FEE2E2', borderRadius: THEME.sizes.radius, padding: 16, marginTop: 16, borderWidth: 1, borderColor: '#FECACA' },
+  errorText: { color: THEME.colors.danger, fontSize: 16, fontWeight: '700', textAlign: 'center' },
+  progressWrap: { marginTop: 16, gap: 6 },
+  progressTrack: { height: 8, backgroundColor: '#E5E7EB', borderRadius: 4, overflow: 'hidden' },
+  progressBar: { height: '100%', backgroundColor: THEME.colors.success },
+  progressText: { fontSize: 14, color: THEME.colors.textLight, textAlign: 'right', fontWeight: '700' },
 
   // Acciones modal
-  modalActions: { flexDirection: 'row', gap: 12, marginTop: 20 },
+  modalActions: { flexDirection: 'row', gap: 12, marginTop: 32 },
   cancelBtn: {
-    flex: 1, paddingVertical: 13, borderRadius: 12,
-    borderWidth: 1.5, borderColor: '#d1d5db', alignItems: 'center',
+    flex: 1, paddingVertical: 16, borderRadius: THEME.sizes.radius,
+    borderWidth: 2, borderColor: THEME.colors.borderBlue, alignItems: 'center',
   },
-  cancelBtnText: { color: '#374151', fontSize: 18, fontWeight: '600' },
+  cancelBtnText: { color: THEME.colors.primary, fontSize: 18, fontWeight: '700' },
   submitBtn: {
-    flex: 2, paddingVertical: 13, borderRadius: 12,
-    backgroundColor: '#16a34a', alignItems: 'center',
+    flex: 2, paddingVertical: 16, borderRadius: THEME.sizes.radius,
+    backgroundColor: THEME.colors.success, alignItems: 'center', ...THEME.shadows.medium,
   },
-  submitBtnText: { color: '#fff', fontSize: 18, fontWeight: '700' },
+  submitBtnText: { color: THEME.colors.white, fontSize: 18, fontWeight: '800' },
 });

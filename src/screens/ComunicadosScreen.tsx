@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import { AxiosError } from 'axios';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
@@ -15,11 +14,22 @@ import {
   Text,
   TextInput,
   View,
+  TouchableOpacity,
 } from 'react-native';
+import { 
+  Megaphone, 
+  Plus, 
+  Clock, 
+  ChevronRight, 
+  AlertCircle,
+  Calendar,
+  MessageSquare
+} from 'lucide-react-native';
 import { useAuth } from '../hooks/useAuth';
 import { API_CONFIG } from '../config/api.config';
 import apiClient from '../services/api.client';
 import { Rol, type Comunicado } from '../types';
+import { THEME } from '../constants/theme';
 
 // ─── Componente principal ───────────────────────────────────────────────────────
 
@@ -59,7 +69,7 @@ export default function ComunicadosScreen() {
   if (isLoading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#1a73e8" />
+        <ActivityIndicator size="large" color={THEME.colors.primary} />
         <Text style={styles.loadingText}>Cargando comunicados…</Text>
       </View>
     );
@@ -67,12 +77,26 @@ export default function ComunicadosScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Encabezado con acción */}
+      <View style={styles.header}>
+        <View />
+        {canCreate && (
+          <TouchableOpacity 
+            style={styles.headerAddBtn} 
+            onPress={() => setShowModal(true)}
+          >
+            <Plus size={20} color={THEME.colors.primary} />
+          </TouchableOpacity>
+        )}
+      </View>
+
       {errorMsg ? (
         <View style={styles.errorBox}>
+          <AlertCircle size={20} color={THEME.colors.danger} />
           <Text style={styles.errorText}>{errorMsg}</Text>
-          <Pressable onPress={fetchComunicados}>
+          <TouchableOpacity onPress={fetchComunicados}>
             <Text style={styles.retryText}>Reintentar</Text>
-          </Pressable>
+          </TouchableOpacity>
         </View>
       ) : null}
 
@@ -84,45 +108,62 @@ export default function ComunicadosScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => { setRefreshing(true); fetchComunicados(); }}
-            colors={['#1a73e8']}
+            colors={[THEME.colors.primary]}
           />
         }
         ListEmptyComponent={
           <View style={styles.emptyState}>
-            <Text style={styles.emptyIcon}>📢</Text>
+            <Megaphone size={64} color={THEME.colors.textLight} />
             <Text style={styles.emptyTitle}>Sin comunicados</Text>
             <Text style={styles.emptySubtitle}>No hay comunicados publicados aún.</Text>
           </View>
         }
         renderItem={({ item }) => (
           <View style={styles.card}>
-            <Text style={styles.mensaje}>{item.mensaje}</Text>
-
-            {item.duracionRestriccion ? (
-              <View style={styles.restriccionBadge}>
-                <Text style={styles.restriccionText}>
-                  ⏱ Restricción: {item.duracionRestriccion} min
-                </Text>
+            <View style={styles.cardRow}>
+              <View style={styles.iconCircle}>
+                <Megaphone size={20} color={THEME.colors.primary} />
               </View>
-            ) : null}
-
-            <Text style={styles.date}>
-              {new Date(item.fechaPublicacion).toLocaleDateString('es-AR', {
-                day: '2-digit',
-                month: 'long',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
-            </Text>
+              <View style={styles.cardContent}>
+                <Text style={styles.mensaje} numberOfLines={3}>{item.mensaje}</Text>
+                
+                <View style={styles.cardFooter}>
+                  <View style={styles.footerItem}>
+                    <Calendar size={12} color={THEME.colors.textLight} />
+                    <Text style={styles.date}>
+                      {new Date(item.fechaPublicacion).toLocaleDateString('es-AR', {
+                        day: '2-digit', month: 'short'
+                      })}
+                    </Text>
+                  </View>
+                  
+                  {item.duracionRestriccion ? (
+                    <View style={styles.restriccionBadge}>
+                      <Clock size={12} color={THEME.colors.primary} />
+                      <Text style={styles.restriccionText}>
+                        {item.duracionRestriccion} min
+                      </Text>
+                    </View>
+                  ) : null}
+                </View>
+              </View>
+              <ChevronRight size={18} color={THEME.colors.borderBlue} />
+            </View>
           </View>
         )}
       />
 
+      {/* Botón Principal Inferior */}
       {canCreate && (
-        <Pressable style={styles.fab} onPress={() => setShowModal(true)}>
-          <Ionicons name="add" size={28} color="#fff" />
-        </Pressable>
+        <View style={styles.footerAction}>
+          <TouchableOpacity 
+            style={styles.mainBtn} 
+            onPress={() => setShowModal(true)}
+          >
+            <Plus size={24} color={THEME.colors.white} />
+            <Text style={styles.mainBtnText}>Nuevo registro</Text>
+          </TouchableOpacity>
+        </View>
       )}
 
       <CrearComunicadoModal
@@ -218,7 +259,7 @@ function CrearComunicadoModal({
               <TextInput
                 style={styles.textArea}
                 placeholder="Escribí el mensaje del comunicado…"
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor={THEME.colors.textLight}
                 multiline
                 numberOfLines={5}
                 textAlignVertical="top"
@@ -233,7 +274,7 @@ function CrearComunicadoModal({
               <TextInput
                 style={styles.inputField}
                 placeholder="Ej: 30"
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor={THEME.colors.textLight}
                 keyboardType="numeric"
                 value={duracion}
                 onChangeText={setDuracion}
@@ -246,20 +287,20 @@ function CrearComunicadoModal({
               ) : null}
 
               <View style={styles.modalActions}>
-                <Pressable style={styles.cancelBtn} onPress={onClose} disabled={isSubmitting}>
+                <TouchableOpacity style={styles.cancelBtn} onPress={onClose} disabled={isSubmitting}>
                   <Text style={styles.cancelBtnText}>Cerrar</Text>
-                </Pressable>
-                <Pressable
+                </TouchableOpacity>
+                <TouchableOpacity
                   style={[styles.submitBtn, isSubmitting && styles.btnDisabled]}
                   onPress={handleSubmit}
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
-                    <ActivityIndicator size="small" color="#fff" />
+                    <ActivityIndicator size="small" color={THEME.colors.white} />
                   ) : (
                     <Text style={styles.submitBtnText}>Publicar</Text>
                   )}
-                </Pressable>
+                </TouchableOpacity>
               </View>
             </ScrollView>
           </Pressable>
@@ -272,141 +313,216 @@ function CrearComunicadoModal({
 // ─── Estilos ────────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f0f4ff' },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f0f4ff' },
-  loadingText: { marginTop: 12, color: '#6b7280', fontSize: 17 },
-  list: { padding: 16, paddingBottom: 80 },
-
-  errorBox: {
-    backgroundColor: '#fee2e2',
-    padding: 12,
-    margin: 16,
-    borderRadius: 10,
+  container: { flex: 1, backgroundColor: THEME.colors.background },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: THEME.colors.background },
+  loadingText: { marginTop: 12, color: THEME.colors.textLight, fontSize: 17, fontWeight: '600' },
+  
+  header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingTop: Platform.OS === 'ios' ? 60 : 40,
+    paddingBottom: 20,
   },
-  errorText: { color: '#dc2626', fontSize: 16, flex: 1 },
-  retryText: { color: '#1a73e8', fontWeight: '600', fontSize: 16, marginLeft: 12 },
-
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: THEME.colors.primary,
   },
-  mensaje: { fontSize: 18, color: '#111827', lineHeight: 24, marginBottom: 10 },
-  restriccionBadge: {
-    backgroundColor: '#fef3c7',
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    alignSelf: 'flex-start',
-    marginBottom: 8,
-  },
-  restriccionText: { fontSize: 14, color: '#92400e', fontWeight: '500' },
-  date: { fontSize: 13, color: '#9ca3af' },
-
-  emptyContainer: { flex: 1 },
-  emptyState: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 80 },
-  emptyIcon: { fontSize: 48, marginBottom: 12 },
-  emptyTitle: { fontSize: 22, fontWeight: '600', color: '#374151' },
-  emptySubtitle: { fontSize: 17, color: '#6b7280', marginTop: 4 },
-
-  // FAB
-  fab: {
-    position: 'absolute',
-    bottom: 24,
-    right: 20,
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: '#1a73e8',
+  headerAddBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: THEME.colors.white,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.25,
-    shadowRadius: 5,
-    elevation: 6,
+    ...THEME.shadows.soft,
+    borderWidth: 1,
+    borderColor: THEME.colors.borderBlue,
+  },
+
+  list: { padding: 20, paddingBottom: 100 },
+
+  errorBox: {
+    backgroundColor: '#fee2e2',
+    padding: 16,
+    marginHorizontal: 20,
+    borderRadius: THEME.sizes.radius,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    borderWidth: 1,
+    borderColor: '#fecaca',
+  },
+  errorText: { color: THEME.colors.danger, fontSize: 15, flex: 1, fontWeight: '600' },
+  retryText: { color: THEME.colors.primary, fontWeight: '700', fontSize: 15 },
+
+  card: {
+    backgroundColor: THEME.colors.white,
+    borderRadius: 20,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: THEME.colors.borderBlue,
+    ...THEME.shadows.soft,
+  },
+  cardRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  iconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: THEME.colors.cardYellow,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: THEME.colors.borderBlue,
+  },
+  cardContent: {
+    flex: 1,
+    gap: 6,
+  },
+  mensaje: { 
+    fontSize: 16, 
+    color: THEME.colors.text, 
+    lineHeight: 22, 
+    fontWeight: '600' 
+  },
+  cardFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  footerItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  restriccionBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: THEME.colors.cardYellow,
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderWidth: 1,
+    borderColor: THEME.colors.borderBlue,
+  },
+  restriccionText: { fontSize: 12, color: THEME.colors.primary, fontWeight: '700' },
+  date: { fontSize: 12, color: THEME.colors.textLight, fontWeight: '500' },
+
+  emptyContainer: { flex: 1 },
+  emptyState: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 60 },
+  emptyTitle: { fontSize: 22, fontWeight: '800', color: THEME.colors.primary, marginTop: 16 },
+  emptySubtitle: { fontSize: 16, color: THEME.colors.textLight, marginTop: 8, textAlign: 'center' },
+
+  // Botón Principal Inferior
+  footerAction: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 20,
+    backgroundColor: 'transparent',
+  },
+  mainBtn: {
+    backgroundColor: THEME.colors.accent,
+    borderRadius: THEME.sizes.radius,
+    paddingVertical: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    ...THEME.shadows.medium,
+  },
+  mainBtnText: {
+    color: THEME.colors.white,
+    fontSize: 20,
+    fontWeight: '800',
   },
 
   // Modal
-  modalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.45)' },
+  modalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.6)' },
   modalKbWrapper: { justifyContent: 'flex-end' },
   modalSheet: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 22,
-    borderTopRightRadius: 22,
-    padding: 20,
-    paddingBottom: 36,
+    backgroundColor: THEME.colors.white,
+    borderTopLeftRadius: THEME.sizes.radius,
+    borderTopRightRadius: THEME.sizes.radius,
+    padding: 24,
+    paddingBottom: 40,
     maxHeight: '85%',
   },
   modalHandle: {
-    width: 40,
-    height: 4,
-    backgroundColor: '#d1d5db',
-    borderRadius: 2,
+    width: 50,
+    height: 6,
+    backgroundColor: '#E5E7EB',
+    borderRadius: 3,
     alignSelf: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
   },
-  modalTitle: { fontSize: 20, fontWeight: '700', color: '#111827', marginBottom: 2 },
-  modalSubtitle: { fontSize: 16, color: '#6b7280', marginBottom: 16 },
+  modalTitle: { fontSize: 24, fontWeight: '800', color: THEME.colors.primary, marginBottom: 4 },
+  modalSubtitle: { fontSize: 16, color: THEME.colors.textLight, marginBottom: 24, fontWeight: '600' },
 
   fieldLabel: {
     fontSize: 14,
-    fontWeight: '700',
-    color: '#6b7280',
+    fontWeight: '800',
+    color: THEME.colors.primary,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginTop: 16,
-    marginBottom: 8,
+    letterSpacing: 1,
+    marginTop: 20,
+    marginBottom: 10,
   },
-  fieldLabelOptional: { fontWeight: '400', textTransform: 'none' },
+  fieldLabelOptional: { fontWeight: '400', textTransform: 'none', color: THEME.colors.textLight },
 
   textArea: {
-    backgroundColor: '#f9fafb',
-    borderRadius: 10,
+    backgroundColor: THEME.colors.cardYellow,
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#d1d5db',
-    padding: 12,
+    borderColor: THEME.colors.borderBlue,
+    padding: 16,
     fontSize: 17,
-    color: '#111827',
-    minHeight: 110,
+    color: THEME.colors.text,
+    minHeight: 120,
+    ...THEME.shadows.soft,
   },
   inputField: {
-    backgroundColor: '#f9fafb',
-    borderRadius: 10,
+    backgroundColor: THEME.colors.cardYellow,
+    borderRadius: 15,
     borderWidth: 1,
-    borderColor: '#d1d5db',
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    borderColor: THEME.colors.borderBlue,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     fontSize: 17,
-    color: '#111827',
+    color: THEME.colors.text,
+    ...THEME.shadows.soft,
   },
 
-  modalErrorBox: { backgroundColor: '#fee2e2', borderRadius: 8, padding: 10, marginTop: 12 },
-  modalErrorText: { color: '#dc2626', fontSize: 16 },
+  modalErrorBox: { backgroundColor: '#fee2e2', borderRadius: 12, padding: 12, marginTop: 16, borderWidth: 1, borderColor: '#fecaca' },
+  modalErrorText: { color: THEME.colors.danger, fontSize: 15, fontWeight: '700' },
 
-  modalActions: { flexDirection: 'row', gap: 12, marginTop: 20 },
+  modalActions: { flexDirection: 'row', gap: 12, marginTop: 32 },
   cancelBtn: {
     flex: 1,
-    paddingVertical: 13,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: '#d1d5db',
+    paddingVertical: 16,
+    borderRadius: THEME.sizes.radius,
+    borderWidth: 2,
+    borderColor: THEME.colors.borderBlue,
     alignItems: 'center',
   },
-  cancelBtnText: { color: '#374151', fontSize: 18, fontWeight: '600' },
+  cancelBtnText: { color: THEME.colors.primary, fontSize: 18, fontWeight: '700' },
   submitBtn: {
     flex: 2,
-    paddingVertical: 13,
-    borderRadius: 12,
-    backgroundColor: '#1a73e8',
+    paddingVertical: 16,
+    borderRadius: THEME.sizes.radius,
+    backgroundColor: THEME.colors.primary,
     alignItems: 'center',
+    ...THEME.shadows.medium,
   },
-  submitBtnText: { color: '#fff', fontSize: 18, fontWeight: '700' },
+  submitBtnText: { color: THEME.colors.white, fontSize: 18, fontWeight: '800' },
   btnDisabled: { opacity: 0.5 },
 });
