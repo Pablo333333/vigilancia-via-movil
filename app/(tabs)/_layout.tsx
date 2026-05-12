@@ -1,6 +1,14 @@
 import { Tabs } from 'expo-router';
+import { LogOut } from 'lucide-react-native';
 import React, { useCallback, useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, StyleSheet, Text } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../src/hooks/useAuth';
 import { Rol } from '../../src/types';
@@ -11,8 +19,13 @@ export default function TabsLayout() {
   const [loggingOut, setLoggingOut] = useState(false);
 
   const handleLogout = useCallback(() => {
+    if (isGuest) {
+      // Invitado: volver a portada sin confirmación
+      logout();
+      return;
+    }
     Alert.alert(
-      'Salir',
+      'Cerrar sesión',
       '¿Estás seguro de que querés salir?',
       [
         { text: 'Cancelar', style: 'cancel' },
@@ -30,15 +43,22 @@ export default function TabsLayout() {
         },
       ],
     );
-  }, [logout]);
+  }, [logout, isGuest]);
 
   const logoutButton = useCallback(
     () => (
-      <Pressable onPress={handleLogout} disabled={loggingOut} style={styles.logoutBtn}>
+      <Pressable
+        onPress={handleLogout}
+        disabled={loggingOut}
+        style={styles.logoutBtn}
+      >
         {loggingOut ? (
           <ActivityIndicator size="small" color="#fff" />
         ) : (
-          <Text style={styles.logoutIcon}>🚪</Text>
+          <>
+            <LogOut size={15} color="#fff" strokeWidth={2.5} />
+            <Text style={styles.logoutText}>Salir</Text>
+          </>
         )}
       </Pressable>
     ),
@@ -48,16 +68,17 @@ export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        headerStyle: { backgroundColor: '#1a73e8' },
+        headerStyle: { backgroundColor: '#1B4F72' },
         headerTintColor: '#fff',
-        headerTitleStyle: { fontWeight: '600' },
-        tabBarActiveTintColor: '#1a73e8',
+        headerTitleStyle: { fontWeight: '700', fontSize: 17 },
+        headerRight: logoutButton,
+        tabBarActiveTintColor: '#E67E22',
         tabBarInactiveTintColor: '#6b7280',
         tabBarStyle: {
           paddingBottom: Math.max(insets.bottom, 6),
           height: 56 + Math.max(insets.bottom, 6),
         },
-        tabBarLabelStyle: { fontSize: 11, fontWeight: '500' },
+        tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
         detachPreviousScreen: false,
       }}
     >
@@ -81,9 +102,10 @@ export default function TabsLayout() {
         options={{
           title: 'Soluciones',
           tabBarIcon: ({ color }) => <TabIcon icon="🔧" color={color} />,
-          href: !isGuest && (user?.rol === Rol.RESPONSABLE || user?.rol === Rol.SUPERVISOR)
-            ? '/(tabs)/soluciones'
-            : null,
+          href:
+            !isGuest && (user?.rol === Rol.RESPONSABLE || user?.rol === Rol.SUPERVISOR)
+              ? '/(tabs)/soluciones'
+              : null,
         }}
       />
       <Tabs.Screen
@@ -99,7 +121,6 @@ export default function TabsLayout() {
         options={{
           title: 'Dashboard',
           tabBarIcon: ({ color }) => <TabIcon icon="📊" color={color} />,
-          // REPORTANTE no tiene acceso al Dashboard
           href: !isGuest && user?.rol !== Rol.REPORTANTE ? '/(tabs)/estadisticas' : null,
         }}
       />
@@ -120,11 +141,18 @@ function TabIcon({ icon, color }: { icon: string; color: string }) {
 
 const styles = StyleSheet.create({
   logoutBtn: {
-    marginRight: 12,
-    padding: 6,
-    borderRadius: 8,
-    justifyContent: 'center',
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 5,
+    marginRight: 14,
+    backgroundColor: '#DC2626',
+    borderRadius: 18,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
   },
-  logoutIcon: { fontSize: 22 },
+  logoutText: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '700',
+  },
 });

@@ -1,13 +1,15 @@
 /**
  * Layout raíz de Expo Router.
  *
- * Responsabilidades:
- *  - Envuelve toda la app en <AuthProvider> para estado de sesión compartido.
- *  - Registra UNA SOLA VEZ el handler de sesión expirada (401 → /login).
- *  - Espera a que el árbol de navegación esté listo antes de redirigir.
- *  - Muestra ActivityIndicator mientras useAuth verifica la sesión.
+ * Rutas públicas (sin autenticación):
+ *  - /         → Pantalla de bienvenida (index)
+ *  - /login    → Login
+ *  - /reporte  → Reporte rápido sin registro
+ *
+ * Rutas protegidas:
+ *  - /(tabs)/* → Requieren user autenticado o isGuest
  */
-import { Stack, useRouter, useSegments, useRootNavigationState } from 'expo-router';
+import { Stack, useRootNavigationState, useRouter, useSegments } from 'expo-router';
 import React, { useEffect, useRef } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { AuthProvider, useAuth } from '../src/hooks/useAuth';
@@ -27,10 +29,9 @@ function RootNavigator() {
   const segments = useSegments();
   const router = useRouter();
   const navigationState = useRootNavigationState();
-
   const { pendingCount } = useOfflineSync();
 
-  // ── Handler de 401 — se registra una sola vez ─────────────────────────────────
+  // Handler 401 — registrado una sola vez
   const handlerRegistered = useRef(false);
   const routerRef = useRef(router);
   routerRef.current = router;
@@ -38,29 +39,35 @@ function RootNavigator() {
   useEffect(() => {
     if (handlerRegistered.current) return;
     handlerRegistered.current = true;
-    registerUnauthorizedHandler(() => routerRef.current.replace('/login'));
+    registerUnauthorizedHandler(() => routerRef.current.replace('/'));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── Redirección de sesión — sólo cuando navegación y auth estén listos ────────
   useEffect(() => {
     if (isLoading) return;
     if (!navigationState?.key) return;
 
-    const inLogin = segments[0] === 'login';
+    const onRoot = segments.length === 0;              // pantalla de bienvenida /
+    const seg0 = segments[0] as string | undefined;
+    const inTabs = seg0 === '(tabs)';
 
-    if (!user && !isGuest && !inLogin) {
-      router.replace('/login');
-    } else if (user && inLogin) {
+    if (inTabs && !user && !isGuest) {
+      // Sesión cerrada o expirada: limpiar stack y volver a portada
+      router.dismissAll();
+      router.replace('/');
+    } else if (onRoot && (user || isGuest)) {
+      // Autenticado en portada → ir directo a tabs
+      router.replace('/(tabs)');
+    } else if (seg0 === 'login' && user) {
+      // Ya logueado, saltar login
       router.replace('/(tabs)');
     }
   }, [user, isGuest, isLoading, segments, navigationState?.key, router]);
 
-  // ── Pantalla de carga inicial ─────────────────────────────────────────────────
   if (isLoading) {
     return (
       <View style={styles.splash}>
-        <ActivityIndicator size="large" color="#1a73e8" />
+        <ActivityIndicator size="large" color={THEME_PRIMARY} />
       </View>
     );
   }
@@ -75,15 +82,24 @@ function RootNavigator() {
         </View>
       )}
       <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" />
         <Stack.Screen name="login" />
+        <Stack.Screen name="reporte" />
         <Stack.Screen name="(tabs)" />
       </Stack>
     </>
   );
 }
 
+const THEME_PRIMARY = '#1B4F72';
+
 const styles = StyleSheet.create({
-  splash: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f0f4ff' },
+  splash: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FDFEFE',
+  },
   offlineBanner: {
     backgroundColor: '#f59e0b',
     paddingVertical: 6,

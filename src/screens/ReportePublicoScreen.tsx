@@ -1,13 +1,12 @@
 /**
- * Pantalla de Nuevo Reporte — para usuarios autenticados e invitados.
+ * Pantalla pública de reporte — accesible sin registro.
  *
- * Diseño en una sola pantalla sin scroll (igual que ReportePublicoScreen):
- *  - Fila compacta: cámara + galería + estado GPS
+ * Diseño en una sola pantalla sin scroll:
+ *  - Header con título y botón Salir (→ portada)
+ *  - Botón de cámara + estado GPS (fila compacta)
  *  - Grilla 4 × 2 de tipos de problema (iconos pequeños)
  *  - Input de comentario de una línea
- *  - Botón "Enviar Reporte" gigante fijo al fondo
- *
- * Diferencia con ReportePublicoScreen: redirige a /(tabs)/mapa al finalizar.
+ *  - Botón grande "Enviar Reporte" fijo al fondo
  */
 import { AxiosError } from 'axios';
 import { router } from 'expo-router';
@@ -18,17 +17,16 @@ import {
   Clock,
   Construction,
   GitBranch,
-  Image as ImageIcon,
   MapPin,
   Navigation,
   TrendingUp,
   Truck,
+  X,
 } from 'lucide-react-native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  KeyboardAvoidingView,
   Platform,
   Pressable,
   StyleSheet,
@@ -36,18 +34,17 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { PhotoPreviewModal } from '../components/PhotoPreviewModal';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { API_CONFIG } from '../config/api.config';
-import { THEME } from '../constants/theme';
 import { useCamera } from '../hooks/useCamera';
 import { useLocation } from '../hooks/useLocation';
 import apiClient from '../services/api.client';
 import { OfflineQueueService } from '../services/offline-queue.service';
+import { THEME } from '../constants/theme';
 import {
   TIPO_PROBLEMA_LABELS,
   TipoProblema,
   type ApiError,
-  type FotoSeleccionada,
   type Reporte,
 } from '../types';
 
@@ -64,7 +61,7 @@ const TIPO_ICONS: Record<TipoProblema, React.ComponentType<{ size: number; color
   [TipoProblema.CAMBIO_TRAZO]: GitBranch,
 };
 
-export default function NewReportScreen() {
+export default function ReportePublicoScreen() {
   const {
     getCurrentLocation,
     startWatching,
@@ -72,13 +69,11 @@ export default function NewReportScreen() {
     coordenadas,
     hasPermission: hasLocationPermission,
   } = useLocation();
-  const { foto, hasCameraPermission, takePhoto, pickFromGallery, clearFoto, setFoto } = useCamera();
+  const { foto, hasCameraPermission, takePhoto } = useCamera();
 
-  const [fotoTemp, setFotoTemp] = useState<FotoSeleccionada | null>(null);
   const [tipoSeleccionado, setTipoSeleccionado] = useState<TipoProblema>(TipoProblema.PIEDRAS_VIA);
   const [comentario, setComentario] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
@@ -88,37 +83,23 @@ export default function NewReportScreen() {
 
   const handleTomarFoto = useCallback(async () => {
     if (!hasCameraPermission) {
-      Alert.alert('Permiso requerido', 'Activá el permiso de cámara en la configuración del dispositivo.');
+      Alert.alert('Permiso requerido', 'Activá el permiso de cámara en la configuración.');
       return;
     }
     try {
-      const res = await takePhoto();
-      if (res) setFotoTemp(res);
+      await takePhoto();
     } catch {
       Alert.alert('Error', 'No se pudo acceder a la cámara.');
     }
   }, [hasCameraPermission, takePhoto]);
 
-  const handleGaleria = useCallback(async () => {
-    try {
-      const res = await pickFromGallery();
-      if (res) setFotoTemp(res);
-    } catch {
-      Alert.alert('Error', 'No se pudo acceder a la galería.');
-    }
-  }, [pickFromGallery]);
-
   const handleSubmit = async () => {
     setErrorMsg(null);
-
     if (!hasLocationPermission || !coordenadas) {
-      setErrorMsg('Esperando señal GPS. Intentá en un lugar con mejor cobertura.');
+      setErrorMsg('Esperando GPS. Intentá en un lugar con mejor cobertura.');
       return;
     }
-
     setIsSubmitting(true);
-    setUploadProgress(0);
-
     try {
       const ubicacion = await getCurrentLocation();
       const formData = new FormData();
@@ -136,25 +117,22 @@ export default function NewReportScreen() {
 
       await apiClient.post<Reporte>(API_CONFIG.ENDPOINTS.REPORTS.BASE, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
-        onUploadProgress: (event) => {
-          if (event.total) setUploadProgress(Math.round((event.loaded * 100) / event.total));
-        },
       });
 
       Alert.alert(
         '¡Reporte enviado!',
-        'Tu reporte fue registrado con estado Pendiente. El equipo responsable lo atenderá pronto.',
-        [{ text: 'OK', onPress: () => router.replace('/(tabs)/mapa') }],
+        'Tu reporte fue registrado. El equipo responsable lo atenderá pronto.',
+        [{ text: 'OK', onPress: () => router.replace('/') }],
       );
     } catch (err) {
-      const isNetworkError =
+      const isNetwork =
         err instanceof AxiosError &&
         (err.code === 'ERR_NETWORK' ||
           err.code === 'ECONNABORTED' ||
           err.code === 'ECONNREFUSED' ||
           !err.response);
 
-      if (isNetworkError) {
+      if (isNetwork) {
         try {
           const ub = coordenadas ?? { latitud: 0, longitud: 0, precision: 0 };
           await OfflineQueueService.enqueue({
@@ -168,11 +146,11 @@ export default function NewReportScreen() {
           });
           Alert.alert(
             'Sin conexión — Guardado',
-            'No hay internet. Tu reporte fue guardado y se enviará al recuperar la señal.',
-            [{ text: 'OK', onPress: () => router.replace('/(tabs)/mapa') }],
+            'Se enviará automáticamente cuando recuperes la señal.',
+            [{ text: 'OK', onPress: () => router.replace('/') }],
           );
         } catch {
-          setErrorMsg('No se pudo guardar el reporte. Intentá nuevamente.');
+          setErrorMsg('No se pudo guardar el reporte. Intentá de nuevo.');
         }
       } else if (err instanceof AxiosError) {
         const data = err.response?.data as ApiError | undefined;
@@ -186,15 +164,23 @@ export default function NewReportScreen() {
       }
     } finally {
       setIsSubmitting(false);
-      setUploadProgress(0);
     }
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.root}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
+    <SafeAreaView style={styles.root}>
+      {/* ─── Header ──────────────────────────────────────────── */}
+      <View style={styles.header}>
+        <View style={styles.headerLeft}>
+          <Text style={styles.headerTitle}>Nuevo Reporte</Text>
+          <Text style={styles.headerSubtitle}>Sin registro</Text>
+        </View>
+        <Pressable style={styles.salirBtn} onPress={() => router.replace('/')}>
+          <X size={16} color={THEME.colors.white} />
+          <Text style={styles.salirText}>Salir</Text>
+        </Pressable>
+      </View>
+
       {/* ─── Body ────────────────────────────────────────────── */}
       <View style={styles.body}>
         {/* Foto + GPS row */}
@@ -203,26 +189,16 @@ export default function NewReportScreen() {
             style={[styles.fotoBtn, !!foto && styles.fotoBtnActive]}
             onPress={handleTomarFoto}
           >
-            <Camera size={18} color={THEME.colors.white} />
-            <Text style={styles.fotoBtnText}>
+            <Camera size={18} color={foto ? THEME.colors.success : THEME.colors.white} />
+            <Text style={[styles.fotoBtnText, !!foto && styles.fotoBtnTextActive]}>
               {foto ? 'Foto lista ✓' : 'Tomar foto'}
-            </Text>
-          </Pressable>
-
-          <Pressable
-            style={[styles.galleryBtn, !!foto && styles.galleryBtnActive]}
-            onPress={foto ? clearFoto : handleGaleria}
-          >
-            <ImageIcon size={16} color={foto ? THEME.colors.danger : THEME.colors.primary} />
-            <Text style={[styles.galleryBtnText, !!foto && styles.galleryBtnTextActive]}>
-              {foto ? 'Quitar' : 'Galería'}
             </Text>
           </Pressable>
 
           <View style={[styles.gpsPill, coordenadas ? styles.gpsPillOk : styles.gpsPillWaiting]}>
             <Navigation size={13} color={coordenadas ? '#fff' : THEME.colors.textLight} />
             <Text style={[styles.gpsText, coordenadas ? styles.gpsTextOk : styles.gpsTextWaiting]}>
-              {coordenadas ? 'GPS OK' : 'GPS…'}
+              {coordenadas ? 'GPS listo' : 'Obteniendo GPS…'}
             </Text>
           </View>
         </View>
@@ -239,7 +215,10 @@ export default function NewReportScreen() {
                 style={[styles.gridCard, isSelected && styles.gridCardSelected]}
                 onPress={() => setTipoSeleccionado(tipo)}
               >
-                <Icon size={18} color={isSelected ? THEME.colors.white : THEME.colors.primary} />
+                <Icon
+                  size={18}
+                  color={isSelected ? THEME.colors.white : THEME.colors.primary}
+                />
                 <Text
                   style={[styles.gridText, isSelected && styles.gridTextSelected]}
                   numberOfLines={2}
@@ -263,19 +242,9 @@ export default function NewReportScreen() {
 
         {/* Error inline */}
         {errorMsg ? <Text style={styles.errorText}>{errorMsg}</Text> : null}
-
-        {/* Progreso de subida */}
-        {isSubmitting && uploadProgress > 0 && uploadProgress < 100 ? (
-          <View style={styles.progressWrap}>
-            <View style={styles.progressTrack}>
-              <View style={[styles.progressBar, { width: `${uploadProgress}%` }]} />
-            </View>
-            <Text style={styles.progressText}>Subiendo… {uploadProgress}%</Text>
-          </View>
-        ) : null}
       </View>
 
-      {/* ─── Footer: botón gigante fijo al fondo ─────────────── */}
+      {/* ─── Footer: botón de envío grande y prominente ───────── */}
       <View style={styles.footer}>
         <Pressable
           style={[styles.submitBtn, isSubmitting && styles.submitBtnDisabled]}
@@ -292,18 +261,7 @@ export default function NewReportScreen() {
           )}
         </Pressable>
       </View>
-
-      {/* ─── Modal de previsualización de foto ───────────────── */}
-      <PhotoPreviewModal
-        visible={!!fotoTemp}
-        uri={fotoTemp?.uri ?? null}
-        onConfirm={() => {
-          setFoto(fotoTemp);
-          setFotoTemp(null);
-        }}
-        onCancel={() => setFotoTemp(null)}
-      />
-    </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
@@ -311,6 +269,46 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: THEME.colors.background,
+  },
+
+  // ─── Header
+  header: {
+    backgroundColor: THEME.colors.primary,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    ...THEME.shadows.medium,
+  },
+  headerLeft: { gap: 2 },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: THEME.colors.white,
+  },
+  headerSubtitle: {
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.7)',
+    fontWeight: '600',
+  },
+  salirBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
+  },
+  salirText: {
+    color: THEME.colors.white,
+    fontSize: 14,
+    fontWeight: '700',
   },
 
   // ─── Body
@@ -321,11 +319,11 @@ const styles = StyleSheet.create({
     gap: 10,
   },
 
-  // ─── Status row: cámara + galería + GPS
+  // Status row
   statusRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
   },
   fotoBtn: {
     flexDirection: 'row',
@@ -333,9 +331,9 @@ const styles = StyleSheet.create({
     gap: 8,
     backgroundColor: THEME.colors.primary,
     borderRadius: 20,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     paddingVertical: 10,
-    flex: 2,
+    flex: 1,
   },
   fotoBtnActive: {
     backgroundColor: THEME.colors.success,
@@ -345,41 +343,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
   },
-  galleryBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderWidth: 1.5,
-    borderColor: THEME.colors.borderBlue,
-    backgroundColor: THEME.colors.white,
-    flex: 1,
-    justifyContent: 'center',
-  },
-  galleryBtnActive: {
-    borderColor: '#FECACA',
-    backgroundColor: '#FEF2F2',
-  },
-  galleryBtnText: {
-    color: THEME.colors.primary,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  galleryBtnTextActive: {
-    color: THEME.colors.danger,
+  fotoBtnTextActive: {
+    color: THEME.colors.white,
   },
   gpsPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
+    gap: 6,
     borderRadius: 20,
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     paddingVertical: 10,
-    borderWidth: 1,
     flex: 1,
-    justifyContent: 'center',
+    borderWidth: 1,
   },
   gpsPillOk: {
     backgroundColor: THEME.colors.success,
@@ -389,11 +364,11 @@ const styles = StyleSheet.create({
     backgroundColor: THEME.colors.cardYellow,
     borderColor: THEME.colors.borderBlue,
   },
-  gpsText: { fontSize: 12, fontWeight: '700' },
+  gpsText: { fontSize: 13, fontWeight: '600' },
   gpsTextOk: { color: THEME.colors.white },
   gpsTextWaiting: { color: THEME.colors.textLight },
 
-  // ─── Section label
+  // Section label
   sectionLabel: {
     fontSize: 14,
     fontWeight: '800',
@@ -458,25 +433,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#FEE2E2',
     borderRadius: 10,
     padding: 10,
-  },
-
-  // ─── Progreso de subida
-  progressWrap: { gap: 4 },
-  progressTrack: {
-    height: 6,
-    backgroundColor: '#E5E7EB',
-    borderRadius: 3,
-    overflow: 'hidden',
-  },
-  progressBar: {
-    height: '100%',
-    backgroundColor: THEME.colors.success,
-  },
-  progressText: {
-    fontSize: 12,
-    color: THEME.colors.textLight,
-    textAlign: 'right',
-    fontWeight: '600',
   },
 
   // ─── Footer / Submit
