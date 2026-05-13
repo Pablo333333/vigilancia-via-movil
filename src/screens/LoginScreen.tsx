@@ -62,7 +62,7 @@ export default function LoginScreen() {
         })
         .catch(() => null);
 
-      router.replace('/(tabs)');
+      router.replace('/(tabs)/mapa');
     } catch (err) {
       setErrorMsg(extractErrorMessage(err));
     } finally {

@@ -37,35 +37,27 @@ function RootNavigator() {
   const handlerRegistered = useRef(false);
   const routerRef = useRef(router);
   routerRef.current = router;
+useEffect(() => {
+  if (isLoading) return;
 
-  useEffect(() => {
-    if (handlerRegistered.current) return;
-    handlerRegistered.current = true;
-    registerUnauthorizedHandler(() => routerRef.current.replace('/'));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // 1. Identificamos si estamos en una pantalla pública
+  //segments[0] será 'login' o 'reporte' si estamos ahí. 
+  //Si segments está vacío, estamos en la raíz (index).
+  const isPublic = segments.length === 0 || segments[0] === 'login' || segments[0] === 'reporte';
 
-  useEffect(() => {
-    if (isLoading) return;
-    if (!navigationState?.key) return;
-
-    const onRoot = segments.length === 0;              // pantalla de bienvenida /
-    const seg0 = segments[0] as string | undefined;
-    const inTabs = seg0 === '(tabs)';
-    const inPublic = onRoot || seg0 === 'login' || seg0 === 'reporte';
-
-    if (!user && !isGuest && !inPublic) {
-      // No autenticado y no en ruta pública: forzar vuelta a portada
-      router.dismissAll();
-      router.replace('/');
-    } else if (onRoot && (user || isGuest)) {
-      // Autenticado en portada → ir directo a tabs
-      router.replace('/(tabs)');
-    } else if (seg0 === 'login' && user) {
-      // Ya logueado, saltar login
-      router.replace('/(tabs)');
+  // 2. Si NO hay usuario y NO estamos en una pública -> A la carretera (Welcome)
+  if (!user && !isGuest) {
+    if (!isPublic) {
+      router.replace('/'); 
     }
-  }, [user, isGuest, isLoading, segments, navigationState?.key, router]);
+    return;
+  }
+
+  // 3. Si HAY usuario y estamos en la Welcome o Login -> Al Mapa
+  if ((user || isGuest) && (segments.length === 0 || segments[0] === 'login')) {
+    router.replace('/(tabs)/mapa');
+  }
+}, [user, isGuest, isLoading, segments]);
 
   if (isLoading) {
     return (
@@ -95,18 +87,23 @@ function RootNavigator() {
         </View>
       )}
       <Stack
-        screenOptions={{
-          headerStyle: { backgroundColor: '#FFFFFF' },
-          headerTitle: () => <BrandHeader />,
-          headerTitleAlign: 'left',
-          headerShadowVisible: true,
-        }}
-      >
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="login" options={{ headerRight: undefined }} />
-        <Stack.Screen name="reporte" options={{ headerRight: publicExitButton }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      </Stack>
+  screenOptions={{
+    headerStyle: { backgroundColor: '#FFFFFF' },
+    headerTitle: () => <BrandHeader />,
+    headerTitleAlign: 'left',
+    headerShadowVisible: true,
+  }}
+>
+  {/* 1. La raíz absoluta (app/index.tsx) */}
+  <Stack.Screen name="index" options={{ headerShown: false }} />
+  
+  {/* 2. Pantallas públicas */}
+  <Stack.Screen name="login" options={{ headerRight: undefined }} />
+  <Stack.Screen name="reporte" options={{ headerRight: publicExitButton }} />
+  
+  {/* 3. El grupo de pestañas */}
+  <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+</Stack>
     </>
   );
 }

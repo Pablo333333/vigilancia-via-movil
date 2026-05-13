@@ -86,7 +86,7 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="nuevo-reporte"
         options={{
           title: 'Nuevo Reporte',
           tabBarIcon: ({ color }) => <TabIcon icon="📍" color={color} />,
