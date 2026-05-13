@@ -1,8 +1,9 @@
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
-import { Image, ImageBackground, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, ImageBackground, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { THEME } from '../src/constants/theme';
 
 const ROAD_IMAGE = require('../assets/ilustracion-dibujos-animados-carretera-arboles-sol-fondo_135595-118851.avif');
 const LOGO_IMAGE = require('../assets/icon.png');
@@ -13,9 +14,13 @@ export default function WelcomeScreen() {
       <StatusBar style="light" />
       <View style={styles.overlay} />
       <SafeAreaView style={styles.safe}>
-        {/* Logo OrganizaDoor */}
-        <View style={styles.logoWrap}>
-          <Image source={LOGO_IMAGE} style={styles.logo} resizeMode="contain" />
+        {/* Header imitado (BrandHeader) */}
+        <View style={styles.fakeHeader}>
+          <Image source={LOGO_IMAGE} style={styles.fakeLogo} resizeMode="contain" />
+          <Text style={styles.brandText}>
+            <Text style={styles.brandBold}>ORGANIZA</Text>
+            <Text style={styles.brandAccent}>DOOR</Text>
+          </Text>
         </View>
 
         {/* App name */}
@@ -53,26 +58,34 @@ const styles = StyleSheet.create({
   safe: {
     flex: 1,
   },
-  logoWrap: {
+  fakeHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginTop: Platform.OS === 'ios' ? 20 : 36,
+    gap: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    marginHorizontal: 16,
+    marginTop: 8,
+    borderRadius: 12,
+    ...THEME.shadows.soft,
   },
-  logo: {
-    width: 110,
-    height: 110,
-    borderRadius: 22,
-    borderWidth: 3,
-    borderColor: 'rgba(255,255,255,0.8)',
+  fakeLogo: {
+    width: 32,
+    height: 32,
+    borderRadius: 6,
   },
-  orgName: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '700',
-    marginTop: 10,
-    letterSpacing: 1,
-    textShadowColor: 'rgba(0,0,0,0.7)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 4,
+  brandText: {
+    fontSize: 18,
+    letterSpacing: 0.5,
+  },
+  brandBold: {
+    fontWeight: '900',
+    color: THEME.colors.primary,
+  },
+  brandAccent: {
+    fontWeight: '900',
+    color: '#E67E22',
   },
   titleWrap: {
     flex: 1,

@@ -67,9 +67,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     ReportsService.invalidateCache();
     setUser(null);
     setIsGuest(false);
-    // Limpiar stack y volver a portada
-    router.dismissAll();
-    router.replace('/');
   }, []);
 
   const continueAsGuest = useCallback(() => {
