@@ -1,12 +1,13 @@
 /**
  * Pantalla pública de reporte — accesible sin registro.
  *
- * Diseño en una sola pantalla sin scroll:
- *  - Header con título y botón Salir (→ portada)
+ * Diseño en una sola pantalla sin scroll (por defecto):
  *  - Botón de cámara + estado GPS (fila compacta)
  *  - Grilla 4 × 2 de tipos de problema (iconos pequeños)
  *  - Input de comentario de una línea
  *  - Botón grande "Enviar Reporte" fijo al fondo
+ *
+ * Incluye KeyboardAvoidingView y ScrollView para que el input sea visible al escribir.
  */
 import { AxiosError } from 'axios';
 import { router } from 'expo-router';
@@ -21,20 +22,20 @@ import {
   Navigation,
   TrendingUp,
   Truck,
-  X,
 } from 'lucide-react-native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  KeyboardAvoidingView,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { API_CONFIG } from '../config/api.config';
 import { useCamera } from '../hooks/useCamera';
 import { useLocation } from '../hooks/useLocation';
@@ -168,81 +169,80 @@ export default function ReportePublicoScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.root}>
-      {/* ─── Header ──────────────────────────────────────────── */}
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Text style={styles.headerTitle}>Nuevo Reporte</Text>
-          <Text style={styles.headerSubtitle}>Sin registro</Text>
-        </View>
-        <Pressable style={styles.salirBtn} onPress={() => router.replace('/')}>
-          <X size={16} color={THEME.colors.white} />
-          <Text style={styles.salirText}>Salir</Text>
-        </Pressable>
-      </View>
+    <KeyboardAvoidingView
+      style={styles.root}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+    >
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        bounces={false}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* ─── Body ────────────────────────────────────────────── */}
+        <View style={styles.body}>
+          {/* Foto + GPS row */}
+          <View style={styles.statusRow}>
+            <Pressable
+              style={[styles.fotoBtn, !!foto && styles.fotoBtnActive]}
+              onPress={handleTomarFoto}
+            >
+              <Camera size={18} color={foto ? THEME.colors.success : THEME.colors.white} />
+              <Text style={[styles.fotoBtnText, !!foto && styles.fotoBtnTextActive]}>
+                {foto ? 'Foto lista ✓' : 'Tomar foto'}
+              </Text>
+            </Pressable>
 
-      {/* ─── Body ────────────────────────────────────────────── */}
-      <View style={styles.body}>
-        {/* Foto + GPS row */}
-        <View style={styles.statusRow}>
-          <Pressable
-            style={[styles.fotoBtn, !!foto && styles.fotoBtnActive]}
-            onPress={handleTomarFoto}
-          >
-            <Camera size={18} color={foto ? THEME.colors.success : THEME.colors.white} />
-            <Text style={[styles.fotoBtnText, !!foto && styles.fotoBtnTextActive]}>
-              {foto ? 'Foto lista ✓' : 'Tomar foto'}
-            </Text>
-          </Pressable>
-
-          <View style={[styles.gpsPill, coordenadas ? styles.gpsPillOk : styles.gpsPillWaiting]}>
-            <Navigation size={13} color={coordenadas ? '#fff' : THEME.colors.textLight} />
-            <Text style={[styles.gpsText, coordenadas ? styles.gpsTextOk : styles.gpsTextWaiting]}>
-              {coordenadas ? 'GPS listo' : 'Obteniendo GPS…'}
-            </Text>
+            <View style={[styles.gpsPill, coordenadas ? styles.gpsPillOk : styles.gpsPillWaiting]}>
+              <Navigation size={13} color={coordenadas ? '#fff' : THEME.colors.textLight} />
+              <Text style={[styles.gpsText, coordenadas ? styles.gpsTextOk : styles.gpsTextWaiting]}>
+                {coordenadas ? 'GPS listo' : 'Obteniendo GPS…'}
+              </Text>
+            </View>
           </View>
-        </View>
 
-        {/* Tipo de problema */}
-        <Text style={styles.sectionLabel}>¿Qué problema ves?</Text>
-        <View style={styles.grid}>
-          {TIPOS.map((tipo) => {
-            const Icon = TIPO_ICONS[tipo] ?? AlertTriangle;
-            const isSelected = tipo === tipoSeleccionado;
-            return (
-              <Pressable
-                key={tipo}
-                style={[styles.gridCard, isSelected && styles.gridCardSelected]}
-                onPress={() => setTipoSeleccionado(tipo)}
-              >
-                <Icon
-                  size={18}
-                  color={isSelected ? THEME.colors.white : THEME.colors.primary}
-                />
-                <Text
-                  style={[styles.gridText, isSelected && styles.gridTextSelected]}
-                  numberOfLines={2}
+          {/* Tipo de problema */}
+          <Text style={styles.sectionLabel}>¿Qué problema ves?</Text>
+          <View style={styles.grid}>
+            {TIPOS.map((tipo) => {
+              const Icon = TIPO_ICONS[tipo] ?? AlertTriangle;
+              const isSelected = tipo === tipoSeleccionado;
+              return (
+                <Pressable
+                  key={tipo}
+                  style={[styles.gridCard, isSelected && styles.gridCardSelected]}
+                  onPress={() => setTipoSeleccionado(tipo)}
                 >
-                  {TIPO_PROBLEMA_LABELS[tipo]}
-                </Text>
-              </Pressable>
-            );
-          })}
+                  <Icon
+                    size={18}
+                    color={isSelected ? THEME.colors.white : THEME.colors.primary}
+                  />
+                  <Text
+                    style={[styles.gridText, isSelected && styles.gridTextSelected]}
+                    numberOfLines={2}
+                  >
+                    {TIPO_PROBLEMA_LABELS[tipo]}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+
+          {/* Comentario */}
+          <TextInput
+            style={styles.commentInput}
+            placeholder="Comentario adicional (opcional)…"
+            placeholderTextColor={THEME.colors.textLight}
+            value={comentario}
+            onChangeText={setComentario}
+            returnKeyType="done"
+          />
+
+          {/* Error inline */}
+          {errorMsg ? <Text style={styles.errorText}>{errorMsg}</Text> : null}
         </View>
-
-        {/* Comentario */}
-        <TextInput
-          style={styles.commentInput}
-          placeholder="Comentario adicional (opcional)…"
-          placeholderTextColor={THEME.colors.textLight}
-          value={comentario}
-          onChangeText={setComentario}
-          returnKeyType="done"
-        />
-
-        {/* Error inline */}
-        {errorMsg ? <Text style={styles.errorText}>{errorMsg}</Text> : null}
-      </View>
+      </ScrollView>
 
       {/* ─── Footer: botón de envío grande y prominente ───────── */}
       <View style={styles.footer}>
@@ -261,7 +261,7 @@ export default function ReportePublicoScreen() {
           )}
         </Pressable>
       </View>
-    </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -270,47 +270,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: THEME.colors.background,
   },
-
-  // ─── Header
-  header: {
-    backgroundColor: THEME.colors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-    ...THEME.shadows.medium,
+  scrollView: {
+    flex: 1,
   },
-  headerLeft: { gap: 2 },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: THEME.colors.white,
+  scrollContent: {
+    flexGrow: 1,
   },
-  headerSubtitle: {
-    fontSize: 12,
-    color: 'rgba(255,255,255,0.7)',
-    fontWeight: '600',
-  },
-  salirBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    borderRadius: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.3)',
-  },
-  salirText: {
-    color: THEME.colors.white,
-    fontSize: 14,
-    fontWeight: '700',
-  },
-
   // ─── Body
   body: {
     flex: 1,
@@ -438,7 +403,7 @@ const styles = StyleSheet.create({
   // ─── Footer / Submit
   footer: {
     paddingHorizontal: 16,
-    paddingBottom: Platform.OS === 'ios' ? 8 : 16,
+    paddingBottom: Platform.OS === 'ios' ? 20 : 16,
     paddingTop: 12,
   },
   submitBtn: {

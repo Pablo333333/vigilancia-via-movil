@@ -11,10 +11,12 @@
  */
 import { Stack, useRootNavigationState, useRouter, useSegments } from 'expo-router';
 import React, { useEffect, useRef } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { AuthProvider, useAuth } from '../src/hooks/useAuth';
 import { useOfflineSync } from '../src/hooks/useOfflineSync';
 import { registerUnauthorizedHandler } from '../src/services';
+import { BrandHeader } from '../src/components/BrandHeader';
+import { X } from 'lucide-react-native';
 
 export default function RootLayout() {
   return (
@@ -50,9 +52,10 @@ function RootNavigator() {
     const onRoot = segments.length === 0;              // pantalla de bienvenida /
     const seg0 = segments[0] as string | undefined;
     const inTabs = seg0 === '(tabs)';
+    const inPublic = onRoot || seg0 === 'login' || seg0 === 'reporte';
 
-    if (inTabs && !user && !isGuest) {
-      // Sesión cerrada o expirada: limpiar stack y volver a portada
+    if (!user && !isGuest && !inPublic) {
+      // No autenticado y no en ruta pública: forzar vuelta a portada
       router.dismissAll();
       router.replace('/');
     } else if (onRoot && (user || isGuest)) {
@@ -72,6 +75,16 @@ function RootNavigator() {
     );
   }
 
+  const publicExitButton = () => (
+    <Pressable
+      onPress={() => router.replace('/')}
+      style={styles.exitBtn}
+    >
+      <X size={16} color="#fff" />
+      <Text style={styles.exitText}>Salir</Text>
+    </Pressable>
+  );
+
   return (
     <>
       {pendingCount > 0 && (
@@ -81,11 +94,18 @@ function RootNavigator() {
           </Text>
         </View>
       )}
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="index" />
-        <Stack.Screen name="login" />
-        <Stack.Screen name="reporte" />
-        <Stack.Screen name="(tabs)" />
+      <Stack
+        screenOptions={{
+          headerStyle: { backgroundColor: '#FFFFFF' },
+          headerTitle: () => <BrandHeader />,
+          headerTitleAlign: 'left',
+          headerShadowVisible: true,
+        }}
+      >
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="login" options={{ headerRight: undefined }} />
+        <Stack.Screen name="reporte" options={{ headerRight: publicExitButton }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack>
     </>
   );
@@ -110,5 +130,20 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 12,
     fontWeight: '600',
+  },
+  exitBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginRight: 14,
+    backgroundColor: '#DC2626',
+    borderRadius: 18,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  exitText: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '700',
   },
 });

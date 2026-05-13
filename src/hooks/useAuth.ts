@@ -67,8 +67,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     ReportsService.invalidateCache();
     setUser(null);
     setIsGuest(false);
-    // La navegación de vuelta a / la maneja _layout.tsx al detectar user === null.
-    // No navegar aquí evita la doble navegación que congela la app.
+    // Limpiar stack y volver a portada
+    router.dismissAll();
+    router.replace('/');
   }, []);
 
   const continueAsGuest = useCallback(() => {

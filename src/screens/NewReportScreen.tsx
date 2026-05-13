@@ -1,12 +1,13 @@
 /**
  * Pantalla de Nuevo Reporte — para usuarios autenticados e invitados.
  *
- * Diseño en una sola pantalla sin scroll (igual que ReportePublicoScreen):
+ * Diseño en una sola pantalla sin scroll (por defecto):
  *  - Fila compacta: cámara + galería + estado GPS
  *  - Grilla 4 × 2 de tipos de problema (iconos pequeños)
  *  - Input de comentario de una línea
  *  - Botón "Enviar Reporte" gigante fijo al fondo
  *
+ * Incluye KeyboardAvoidingView y ScrollView para que el input sea visible al escribir.
  * Diferencia con ReportePublicoScreen: redirige a /(tabs)/mapa al finalizar.
  */
 import { AxiosError } from 'axios';
@@ -31,6 +32,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -194,86 +196,94 @@ export default function NewReportScreen() {
     <KeyboardAvoidingView
       style={styles.root}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
     >
-      {/* ─── Body ────────────────────────────────────────────── */}
-      <View style={styles.body}>
-        {/* Foto + GPS row */}
-        <View style={styles.statusRow}>
-          <Pressable
-            style={[styles.fotoBtn, !!foto && styles.fotoBtnActive]}
-            onPress={handleTomarFoto}
-          >
-            <Camera size={18} color={THEME.colors.white} />
-            <Text style={styles.fotoBtnText}>
-              {foto ? 'Foto lista ✓' : 'Tomar foto'}
-            </Text>
-          </Pressable>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        bounces={false}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* ─── Body ────────────────────────────────────────────── */}
+        <View style={styles.body}>
+          {/* Foto + GPS row */}
+          <View style={styles.statusRow}>
+            <Pressable
+              style={[styles.fotoBtn, !!foto && styles.fotoBtnActive]}
+              onPress={handleTomarFoto}
+            >
+              <Camera size={18} color={THEME.colors.white} />
+              <Text style={styles.fotoBtnText}>
+                {foto ? 'Foto lista ✓' : 'Tomar foto'}
+              </Text>
+            </Pressable>
 
-          <Pressable
-            style={[styles.galleryBtn, !!foto && styles.galleryBtnActive]}
-            onPress={foto ? clearFoto : handleGaleria}
-          >
-            <ImageIcon size={16} color={foto ? THEME.colors.danger : THEME.colors.primary} />
-            <Text style={[styles.galleryBtnText, !!foto && styles.galleryBtnTextActive]}>
-              {foto ? 'Quitar' : 'Galería'}
-            </Text>
-          </Pressable>
+            <Pressable
+              style={[styles.galleryBtn, !!foto && styles.galleryBtnActive]}
+              onPress={foto ? clearFoto : handleGaleria}
+            >
+              <ImageIcon size={16} color={foto ? THEME.colors.danger : THEME.colors.primary} />
+              <Text style={[styles.galleryBtnText, !!foto && styles.galleryBtnTextActive]}>
+                {foto ? 'Quitar' : 'Galería'}
+              </Text>
+            </Pressable>
 
-          <View style={[styles.gpsPill, coordenadas ? styles.gpsPillOk : styles.gpsPillWaiting]}>
-            <Navigation size={13} color={coordenadas ? '#fff' : THEME.colors.textLight} />
-            <Text style={[styles.gpsText, coordenadas ? styles.gpsTextOk : styles.gpsTextWaiting]}>
-              {coordenadas ? 'GPS OK' : 'GPS…'}
-            </Text>
-          </View>
-        </View>
-
-        {/* Tipo de problema */}
-        <Text style={styles.sectionLabel}>¿Qué problema ves?</Text>
-        <View style={styles.grid}>
-          {TIPOS.map((tipo) => {
-            const Icon = TIPO_ICONS[tipo] ?? AlertTriangle;
-            const isSelected = tipo === tipoSeleccionado;
-            return (
-              <Pressable
-                key={tipo}
-                style={[styles.gridCard, isSelected && styles.gridCardSelected]}
-                onPress={() => setTipoSeleccionado(tipo)}
-              >
-                <Icon size={18} color={isSelected ? THEME.colors.white : THEME.colors.primary} />
-                <Text
-                  style={[styles.gridText, isSelected && styles.gridTextSelected]}
-                  numberOfLines={2}
-                >
-                  {TIPO_PROBLEMA_LABELS[tipo]}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-
-        {/* Comentario */}
-        <TextInput
-          style={styles.commentInput}
-          placeholder="Comentario adicional (opcional)…"
-          placeholderTextColor={THEME.colors.textLight}
-          value={comentario}
-          onChangeText={setComentario}
-          returnKeyType="done"
-        />
-
-        {/* Error inline */}
-        {errorMsg ? <Text style={styles.errorText}>{errorMsg}</Text> : null}
-
-        {/* Progreso de subida */}
-        {isSubmitting && uploadProgress > 0 && uploadProgress < 100 ? (
-          <View style={styles.progressWrap}>
-            <View style={styles.progressTrack}>
-              <View style={[styles.progressBar, { width: `${uploadProgress}%` }]} />
+            <View style={[styles.gpsPill, coordenadas ? styles.gpsPillOk : styles.gpsPillWaiting]}>
+              <Navigation size={13} color={coordenadas ? '#fff' : THEME.colors.textLight} />
+              <Text style={[styles.gpsText, coordenadas ? styles.gpsTextOk : styles.gpsTextWaiting]}>
+                {coordenadas ? 'GPS OK' : 'GPS…'}
+              </Text>
             </View>
-            <Text style={styles.progressText}>Subiendo… {uploadProgress}%</Text>
           </View>
-        ) : null}
-      </View>
+
+          {/* Tipo de problema */}
+          <Text style={styles.sectionLabel}>¿Qué problema ves?</Text>
+          <View style={styles.grid}>
+            {TIPOS.map((tipo) => {
+              const Icon = TIPO_ICONS[tipo] ?? AlertTriangle;
+              const isSelected = tipo === tipoSeleccionado;
+              return (
+                <Pressable
+                  key={tipo}
+                  style={[styles.gridCard, isSelected && styles.gridCardSelected]}
+                  onPress={() => setTipoSeleccionado(tipo)}
+                >
+                  <Icon size={18} color={isSelected ? THEME.colors.white : THEME.colors.primary} />
+                  <Text
+                    style={[styles.gridText, isSelected && styles.gridTextSelected]}
+                    numberOfLines={2}
+                  >
+                    {TIPO_PROBLEMA_LABELS[tipo]}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+
+          {/* Comentario */}
+          <TextInput
+            style={styles.commentInput}
+            placeholder="Comentario adicional (opcional)…"
+            placeholderTextColor={THEME.colors.textLight}
+            value={comentario}
+            onChangeText={setComentario}
+            returnKeyType="done"
+          />
+
+          {/* Error inline */}
+          {errorMsg ? <Text style={styles.errorText}>{errorMsg}</Text> : null}
+
+          {/* Progreso de subida */}
+          {isSubmitting && uploadProgress > 0 && uploadProgress < 100 ? (
+            <View style={styles.progressWrap}>
+              <View style={styles.progressTrack}>
+                <View style={[styles.progressBar, { width: `${uploadProgress}%` }]} />
+              </View>
+              <Text style={styles.progressText}>Subiendo… {uploadProgress}%</Text>
+            </View>
+          ) : null}
+        </View>
+      </ScrollView>
 
       {/* ─── Footer: botón gigante fijo al fondo ─────────────── */}
       <View style={styles.footer}>
@@ -312,7 +322,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: THEME.colors.background,
   },
-
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+  },
   // ─── Body
   body: {
     flex: 1,
@@ -482,7 +497,7 @@ const styles = StyleSheet.create({
   // ─── Footer / Submit
   footer: {
     paddingHorizontal: 16,
-    paddingBottom: Platform.OS === 'ios' ? 8 : 16,
+    paddingBottom: Platform.OS === 'ios' ? 20 : 16,
     paddingTop: 12,
   },
   submitBtn: {

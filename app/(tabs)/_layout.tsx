@@ -12,6 +12,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../src/hooks/useAuth';
 import { Rol } from '../../src/types';
+import { BrandHeader } from '../../src/components/BrandHeader';
 
 export default function TabsLayout() {
   const { user, isGuest, logout } = useAuth();
@@ -68,10 +69,12 @@ export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        headerStyle: { backgroundColor: '#1B4F72' },
-        headerTintColor: '#fff',
-        headerTitleStyle: { fontWeight: '700', fontSize: 17 },
+        headerStyle: { backgroundColor: '#FFFFFF' },
+        headerTintColor: '#1B4F72',
+        headerTitle: () => <BrandHeader />,
+        headerTitleAlign: 'left',
         headerRight: logoutButton,
+        headerShadowVisible: true,
         tabBarActiveTintColor: '#E67E22',
         tabBarInactiveTintColor: '#6b7280',
         tabBarStyle: {
