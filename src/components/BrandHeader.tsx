@@ -10,7 +10,10 @@ export const BrandHeader = () => {
         style={styles.logo}
         resizeMode="contain"
       />
-      <Text style={styles.brandText}>ORGANIZADOOR</Text>
+      <Text style={styles.brandText}>
+        <Text style={styles.brandBold}>ORGANIZA</Text>
+        <Text style={styles.brandAccent}>DOOR</Text>
+      </Text>
     </View>
   );
 };
@@ -22,14 +25,20 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   logo: {
-    width: 32,
-    height: 32,
-    borderRadius: 6,
+    width: 36,
+    height: 36,
+    borderRadius: 8,
   },
   brandText: {
-    fontSize: 18,
+    fontSize: 17,
+    letterSpacing: 0.3,
+  },
+  brandBold: {
     fontWeight: '900',
     color: COLORS.primary,
-    letterSpacing: 0.5,
+  },
+  brandAccent: {
+    fontWeight: '900',
+    color: '#E67E22',
   },
 });

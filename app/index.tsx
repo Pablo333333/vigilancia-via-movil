@@ -16,7 +16,6 @@ export default function WelcomeScreen() {
         {/* Logo OrganizaDoor */}
         <View style={styles.logoWrap}>
           <Image source={LOGO_IMAGE} style={styles.logo} resizeMode="contain" />
-          <Text style={styles.orgName}>OrganizaDoor</Text>
         </View>
 
         {/* App name */}
