@@ -90,6 +90,8 @@ export default function TabsLayout() {
         options={{
           title: 'Nuevo Reporte',
           tabBarIcon: ({ color }) => <TabIcon icon="📍" color={color} />,
+          // Si es Responsable, href es null (oculta la tab)
+          href: user?.rol === Rol.RESPONSABLE ? null : '/(tabs)/nuevo-reporte',
         }}
       />
       <Tabs.Screen
