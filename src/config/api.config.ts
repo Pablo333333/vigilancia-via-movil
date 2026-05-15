@@ -8,7 +8,7 @@
  *   BASE_URL = 'http://<IP-de-tu-PC>:3000'
  */
 export const API_CONFIG = {
-  BASE_URL: 'http://192.168.1.203:3000',
+  BASE_URL: 'https://vigilancia-via-backend-production.up.railway.app',
 
   TIMEOUT_MS: 15_000,
 

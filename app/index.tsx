@@ -5,7 +5,7 @@ import { Image, ImageBackground, Pressable, StyleSheet, Text, View } from 'react
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { THEME } from '../src/constants/theme';
 
-const ROAD_IMAGE = require('../assets/ilustracion-dibujos-animados-carretera-arboles-sol-fondo_135595-118851.avif');
+const ROAD_IMAGE = require('../assets/fondo.jpg');
 const LOGO_IMAGE = require('../assets/icon.png');
 
 export default function WelcomeScreen() {

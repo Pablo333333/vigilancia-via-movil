@@ -5,9 +5,9 @@
     "version": "1.0.0",
     "scheme": "vigilancia-via",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/logo.jpg",
     "splash": {
-      "image": "./assets/icon.png",
+      "image": "./assets/logo.png",
       "resizeMode": "contain",
       "backgroundColor": "#1a73e8"
     },
@@ -35,7 +35,7 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/icon.png",
+          "icon": "./assets/logo.jpg",
           "color": "#1a73e8",
           "sounds": [],
           "androidMode": "default",
@@ -55,7 +55,7 @@
     ],
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/icon.png",
+        "foregroundImage": "./assets/logo.jpg",
         "backgroundColor": "#1a73e8"
       },
       "config": {
