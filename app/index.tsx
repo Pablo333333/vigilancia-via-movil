@@ -17,10 +17,7 @@ export default function WelcomeScreen() {
         {/* Header imitado (BrandHeader) */}
         <View style={styles.fakeHeader}>
           <Image source={LOGO_IMAGE} style={styles.fakeLogo} resizeMode="contain" />
-          <Text style={styles.brandText}>
-            <Text style={styles.brandBold}>ORGANIZA</Text>
-            <Text style={styles.brandAccent}>DOOR</Text>
-          </Text>
+          <Text style={styles.brandText}>Vigilancia de la Vía</Text>
         </View>
 
         {/* App name */}
@@ -76,16 +73,10 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   brandText: {
-    fontSize: 18,
-    letterSpacing: 0.5,
-  },
-  brandBold: {
-    fontWeight: '900',
+    fontSize: 16,
+    fontWeight: '800',
+    letterSpacing: 0.2,
     color: THEME.colors.primary,
-  },
-  brandAccent: {
-    fontWeight: '900',
-    color: '#E67E22',
   },
   titleWrap: {
     flex: 1,

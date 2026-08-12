@@ -29,6 +29,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -195,7 +196,7 @@ export default function NewReportScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.root}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
     >
       <ScrollView
@@ -203,6 +204,7 @@ export default function NewReportScreen() {
         contentContainerStyle={styles.scrollContent}
         bounces={false}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         {/* ─── Body ────────────────────────────────────────────── */}
         <View style={styles.body}>
@@ -235,6 +237,20 @@ export default function NewReportScreen() {
               </Text>
             </View>
           </View>
+
+          {/* Miniatura de la foto capturada */}
+          {foto ? (
+            <View style={styles.fotoPreviewWrap}>
+              <Image
+                source={{ uri: foto.uri }}
+                style={styles.fotoPreview}
+                resizeMode="cover"
+              />
+              <Pressable style={styles.fotoRemoveBtn} onPress={clearFoto}>
+                <Text style={styles.fotoRemoveText}>✕ Quitar</Text>
+              </Pressable>
+            </View>
+          ) : null}
 
           {/* Tipo de problema */}
           <Text style={styles.sectionLabel}>¿Qué problema ves?</Text>
@@ -407,6 +423,33 @@ const styles = StyleSheet.create({
   gpsText: { fontSize: 12, fontWeight: '700' },
   gpsTextOk: { color: THEME.colors.white },
   gpsTextWaiting: { color: THEME.colors.textLight },
+
+  // ─── Miniatura de foto
+  fotoPreviewWrap: {
+    position: 'relative',
+    alignSelf: 'flex-start',
+  },
+  fotoPreview: {
+    width: 120,
+    height: 120,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: THEME.colors.borderBlue,
+  },
+  fotoRemoveBtn: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    borderRadius: 14,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  fotoRemoveText: {
+    color: THEME.colors.white,
+    fontSize: 12,
+    fontWeight: '700',
+  },
 
   // ─── Section label
   sectionLabel: {

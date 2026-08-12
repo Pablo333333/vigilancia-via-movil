@@ -10,9 +10,8 @@ export const BrandHeader = () => {
         style={styles.logo}
         resizeMode="contain"
       />
-      <Text style={styles.brandText}>
-        <Text style={styles.brandBold}>ORGANIZA</Text>
-        <Text style={styles.brandAccent}>DOOR</Text>
+      <Text style={styles.brandText} numberOfLines={1}>
+        Vigilancia de la Vía
       </Text>
     </View>
   );
@@ -23,6 +22,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    maxWidth: 260,
   },
   logo: {
     width: 36,
@@ -30,15 +30,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   brandText: {
-    fontSize: 17,
-    letterSpacing: 0.3,
-  },
-  brandBold: {
-    fontWeight: '900',
+    fontSize: 15,
+    fontWeight: '800',
+    letterSpacing: 0.2,
     color: COLORS.primary,
-  },
-  brandAccent: {
-    fontWeight: '900',
-    color: '#E67E22',
   },
 });

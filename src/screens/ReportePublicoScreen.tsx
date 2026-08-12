@@ -27,6 +27,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -36,16 +37,18 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { PhotoPreviewModal } from '../components/PhotoPreviewModal';
 import { API_CONFIG } from '../config/api.config';
+import { THEME } from '../constants/theme';
 import { useCamera } from '../hooks/useCamera';
 import { useLocation } from '../hooks/useLocation';
 import apiClient from '../services/api.client';
 import { OfflineQueueService } from '../services/offline-queue.service';
-import { THEME } from '../constants/theme';
 import {
   TIPO_PROBLEMA_LABELS,
   TipoProblema,
   type ApiError,
+  type FotoSeleccionada,
   type Reporte,
 } from '../types';
 
@@ -70,8 +73,9 @@ export default function ReportePublicoScreen() {
     coordenadas,
     hasPermission: hasLocationPermission,
   } = useLocation();
-  const { foto, hasCameraPermission, takePhoto } = useCamera();
+  const { foto, hasCameraPermission, takePhoto, clearFoto, setFoto } = useCamera();
 
+  const [fotoTemp, setFotoTemp] = useState<FotoSeleccionada | null>(null);
   const [tipoSeleccionado, setTipoSeleccionado] = useState<TipoProblema>(TipoProblema.PIEDRAS_VIA);
   const [comentario, setComentario] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -88,7 +92,8 @@ export default function ReportePublicoScreen() {
       return;
     }
     try {
-      await takePhoto();
+      const res = await takePhoto();
+      if (res) setFotoTemp(res);
     } catch {
       Alert.alert('Error', 'No se pudo acceder a la cámara.');
     }
@@ -171,7 +176,7 @@ export default function ReportePublicoScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.root}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
     >
       <ScrollView
@@ -179,6 +184,7 @@ export default function ReportePublicoScreen() {
         contentContainerStyle={styles.scrollContent}
         bounces={false}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         {/* ─── Body ────────────────────────────────────────────── */}
         <View style={styles.body}>
@@ -188,8 +194,8 @@ export default function ReportePublicoScreen() {
               style={[styles.fotoBtn, !!foto && styles.fotoBtnActive]}
               onPress={handleTomarFoto}
             >
-              <Camera size={18} color={foto ? THEME.colors.success : THEME.colors.white} />
-              <Text style={[styles.fotoBtnText, !!foto && styles.fotoBtnTextActive]}>
+              <Camera size={18} color={THEME.colors.white} />
+              <Text style={styles.fotoBtnText}>
                 {foto ? 'Foto lista ✓' : 'Tomar foto'}
               </Text>
             </Pressable>
@@ -201,6 +207,20 @@ export default function ReportePublicoScreen() {
               </Text>
             </View>
           </View>
+
+          {/* Miniatura de la foto capturada */}
+          {foto ? (
+            <View style={styles.fotoPreviewWrap}>
+              <Image
+                source={{ uri: foto.uri }}
+                style={styles.fotoPreview}
+                resizeMode="cover"
+              />
+              <Pressable style={styles.fotoRemoveBtn} onPress={clearFoto}>
+                <Text style={styles.fotoRemoveText}>✕ Quitar</Text>
+              </Pressable>
+            </View>
+          ) : null}
 
           {/* Tipo de problema */}
           <Text style={styles.sectionLabel}>¿Qué problema ves?</Text>
@@ -261,6 +281,17 @@ export default function ReportePublicoScreen() {
           )}
         </Pressable>
       </View>
+
+      {/* ─── Modal de previsualización de foto ───────────────── */}
+      <PhotoPreviewModal
+        visible={!!fotoTemp}
+        uri={fotoTemp?.uri ?? null}
+        onConfirm={() => {
+          setFoto(fotoTemp);
+          setFotoTemp(null);
+        }}
+        onCancel={() => setFotoTemp(null)}
+      />
     </KeyboardAvoidingView>
   );
 }
@@ -308,9 +339,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
   },
-  fotoBtnTextActive: {
-    color: THEME.colors.white,
-  },
   gpsPill: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -332,6 +360,33 @@ const styles = StyleSheet.create({
   gpsText: { fontSize: 13, fontWeight: '600' },
   gpsTextOk: { color: THEME.colors.white },
   gpsTextWaiting: { color: THEME.colors.textLight },
+
+  // Miniatura de foto
+  fotoPreviewWrap: {
+    position: 'relative',
+    alignSelf: 'flex-start',
+  },
+  fotoPreview: {
+    width: 120,
+    height: 120,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: THEME.colors.borderBlue,
+  },
+  fotoRemoveBtn: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    borderRadius: 14,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  fotoRemoveText: {
+    color: THEME.colors.white,
+    fontSize: 12,
+    fontWeight: '700',
+  },
 
   // Section label
   sectionLabel: {

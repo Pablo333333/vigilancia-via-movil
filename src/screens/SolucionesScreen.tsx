@@ -435,7 +435,7 @@ function ResolucionModal({
     >
       <Pressable style={styles.modalOverlay} onPress={onClose}>
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.modalKbWrapper}
         >
           <Pressable style={styles.modalSheet} onPress={(e) => e.stopPropagation()}>

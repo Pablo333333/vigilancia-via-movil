@@ -1,32 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet, Pressable, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useAuth } from '../../src/hooks/useAuth';
 
 export default function AjustesScreen() {
-  const { user, isGuest, logout } = useAuth();
-  const [loggingOut, setLoggingOut] = React.useState(false);
-
-  const handleLogout = () => {
-    Alert.alert(
-      'Salir',
-      '¿Estás seguro de que querés salir?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Salir',
-          style: 'destructive',
-          onPress: async () => {
-            setLoggingOut(true);
-            try {
-              await logout();
-            } finally {
-              setLoggingOut(false);
-            }
-          },
-        },
-      ],
-    );
-  };
+  const { user, isGuest } = useAuth();
 
   return (
     <View style={styles.container}>
@@ -45,20 +22,6 @@ export default function AjustesScreen() {
           </View>
         )}
       </View>
-
-      <View style={styles.section}>
-        <Pressable
-          style={styles.logoutButton}
-          onPress={handleLogout}
-          disabled={loggingOut}
-        >
-          {loggingOut ? (
-            <ActivityIndicator color="#dc2626" />
-          ) : (
-            <Text style={styles.logoutButtonText}>Salir</Text>
-          )}
-        </Pressable>
-      </View>
     </View>
   );
 }
@@ -70,7 +33,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   section: {
-    marginBottom: 30,
+    marginBottom: 20,
     backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
@@ -99,15 +62,5 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     color: '#111827',
-  },
-  logoutButton: {
-    paddingVertical: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logoutButtonText: {
-    color: '#dc2626',
-    fontSize: 16,
-    fontWeight: '600',
   },
 });
